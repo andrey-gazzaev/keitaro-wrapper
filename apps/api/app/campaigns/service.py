@@ -9,8 +9,11 @@ from fastapi import Depends
 from sqlalchemy import DateTime, Integer, Text, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from app.campaigns.client import CampaignRemote, KeitaroClient, KeitaroError, StreamRemote, get_keitaro
-from app.campaigns.model import Campaign, CampaignDraft
+from app.campaigns.client import KeitaroClient, KeitaroError, get_keitaro
+from app.campaigns.models.campaign import Campaign
+from app.campaigns.models.campaign_draft import CampaignDraft
+from app.campaigns.models.campaign_remote import CampaignRemote
+from app.campaigns.models.stream_remote import StreamRemote
 from app.db import Base, SessionDep
 
 _GOOGLE = "https://www.google.com"

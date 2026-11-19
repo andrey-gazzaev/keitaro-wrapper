@@ -1,11 +1,11 @@
-"""Campaign request and response bodies."""
+"""Campaign request body."""
 
 from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator
 
 
-class CampaignIn(BaseModel):
+class CampaignInDto(BaseModel):
     """Name, country, and offer used to create one campaign."""
 
     name: str
@@ -36,16 +36,3 @@ class CampaignIn(BaseModel):
             raise ValueError("Country must be two letters.")
 
         return value.upper()
-
-
-class CampaignOut(BaseModel):
-    """Campaign the client can show. `deleted` is true when the row is a tombstone."""
-
-    id: int
-    """Keitaro id of this campaign."""
-
-    name: str
-    """Name shown to the operator."""
-
-    deleted: bool
-    """True when the stored row is a tombstone. False while the campaign is live."""

@@ -2,10 +2,14 @@
 
 import os
 from collections.abc import Generator
-from dataclasses import dataclass
 from typing import Literal
 
 import httpx
+
+from app.campaigns.models.campaign_remote import CampaignRemote
+from app.campaigns.models.filter_remote import FilterRemote
+from app.campaigns.models.offer_remote import OfferRemote
+from app.campaigns.models.stream_remote import StreamRemote
 
 
 class KeitaroError(Exception):
@@ -18,86 +22,6 @@ class KeitaroError(Exception):
         """A failed call of this kind."""
         self.kind = kind
         super().__init__(kind)
-
-
-@dataclass(frozen=True)
-class CampaignRemote:
-    """Campaign fields read from Keitaro for a sync comparison."""
-
-    name: str
-    """Campaign name. Empty when Keitaro omits it."""
-
-    alias: str
-    """Campaign alias. Empty when Keitaro omits it."""
-
-    type: str
-    """Campaign type. Empty when Keitaro omits it."""
-
-    state: str
-    """Campaign state. Empty when Keitaro omits it."""
-
-    group_id: int | None
-    """Group id. None when Keitaro has no group."""
-
-    traffic_source_id: int | None
-    """Traffic source id. None when Keitaro has no traffic source."""
-
-
-@dataclass(frozen=True)
-class OfferRemote:
-    """One offer on a Keitaro flow."""
-
-    offer_id: object
-    """Offer id as Keitaro sent it. None when the field is missing."""
-
-    share: object
-    """Share as Keitaro sent it. None when the field is missing."""
-
-    state: object
-    """Offer state as Keitaro sent it. None when the field is missing."""
-
-
-@dataclass(frozen=True)
-class FilterRemote:
-    """One filter on a Keitaro flow."""
-
-    name: str
-    """Filter name. Empty when Keitaro omits it."""
-
-    mode: str
-    """Filter mode. Empty when Keitaro omits it."""
-
-    payload: object
-    """Filter payload as Keitaro sent it. None when the field is missing."""
-
-
-@dataclass(frozen=True)
-class StreamRemote:
-    """One flow read from Keitaro for a sync comparison."""
-
-    id: int
-    """Keitaro flow id."""
-
-    type: str
-    """Flow type. Empty when Keitaro omits it."""
-
-    state: str
-    """Flow state. Empty when Keitaro omits it."""
-
-    schema: str
-    """Flow schema. Empty when Keitaro omits it."""
-
-    action_type: str
-    """Action type. Empty when Keitaro omits it."""
-
-    action_payload: object
-    """Action payload as Keitaro sent it. None when the field is missing."""
-
-    offers: tuple[OfferRemote, ...]
-    """Offers on this flow. Empty when the flow has none."""
-
-    filters: tuple[FilterRemote, ...]
-    """Filters on this flow. Empty when the flow has none."""
 
 
 class KeitaroClient:

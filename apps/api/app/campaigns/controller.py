@@ -4,8 +4,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.campaigns.dto import CampaignIn, CampaignOut
-from app.campaigns.model import Campaign, CampaignDraft
+from app.campaigns.dtos.campaign_in_dto import CampaignInDto
+from app.campaigns.dtos.campaign_out_dto import CampaignOutDto
+from app.campaigns.models.campaign import Campaign
+from app.campaigns.models.campaign_draft import CampaignDraft
 from app.campaigns.service import CampaignCallError, CampaignSetupError, Campaigns, get_campaigns
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
@@ -23,16 +25,16 @@ def _http_error(error: CampaignCallError) -> HTTPException:
     return HTTPException(status_code=_STATUS[error.kind])
 
 
-def _draft(incoming: CampaignIn) -> CampaignDraft:
+def _draft(incoming: CampaignInDto) -> CampaignDraft:
     return CampaignDraft(name=incoming.name, country=incoming.country, offer_id=incoming.offer_id)
 
 
-def _response(campaign: Campaign) -> CampaignOut:
-    return CampaignOut(id=campaign.id, name=campaign.name, deleted=campaign.deleted)
+def _response(campaign: Campaign) -> CampaignOutDto:
+    return CampaignOutDto(id=campaign.id, name=campaign.name, deleted=campaign.deleted)
 
 
 @router.post("")
-def create_campaign(incoming: CampaignIn, campaigns: CampaignsDep) -> CampaignOut:
+def create_campaign(incoming: CampaignInDto, campaigns: CampaignsDep) -> CampaignOutDto:
     """Create one campaign in Keitaro and store the row."""
     try:
         created = campaigns.create(_draft(incoming))
@@ -45,13 +47,13 @@ def create_campaign(incoming: CampaignIn, campaigns: CampaignsDep) -> CampaignOu
 
 
 @router.get("")
-def list_campaigns(campaigns: CampaignsDep) -> list[CampaignOut]:
+def list_campaigns(campaigns: CampaignsDep) -> list[CampaignOutDto]:
     """Every stored campaign, newest first."""
     return [_response(campaign) for campaign in campaigns.list()]
 
 
 @router.post("/sync")
-def sync_campaigns(campaigns: CampaignsDep) -> list[CampaignOut]:
+def sync_campaigns(campaigns: CampaignsDep) -> list[CampaignOutDto]:
     """Compare live rows with Keitaro and return every stored campaign."""
     try:
         synced = campaigns.sync()
