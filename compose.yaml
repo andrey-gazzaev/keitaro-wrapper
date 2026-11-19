@@ -18,6 +18,7 @@ services:
 
   api:
     profiles: ["api"]
+    env_file: .env
     build:
       context: ./apps/api
     container_name: keitaro-api
