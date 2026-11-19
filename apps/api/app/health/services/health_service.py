@@ -4,14 +4,14 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.db import SessionDep
-from app.health.model import Health
+from app.health.models.health import Health
 
 
-class HealthCheck:
+class HealthService:
     """Whether the database accepts a query."""
 
     def __init__(self, session: Session) -> None:
-        """A health check bound to one database session."""
+        """A health service bound to one database session."""
         self._session = session
 
     def read(self) -> Health:
@@ -21,6 +21,6 @@ class HealthCheck:
         return Health(status="ok")
 
 
-def get_health_check(session: SessionDep) -> HealthCheck:
-    """Health check for one request."""
-    return HealthCheck(session)
+def get_health_service(session: SessionDep) -> HealthService:
+    """Health service for one request."""
+    return HealthService(session)

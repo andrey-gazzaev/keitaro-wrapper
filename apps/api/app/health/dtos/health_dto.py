@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 
-class HealthOut(BaseModel):
+class HealthDto(BaseModel):
     """Reachability of the API and the database."""
 
     status: Literal["ok"]
