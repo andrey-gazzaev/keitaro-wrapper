@@ -26,7 +26,7 @@ The sketch is the contract. Implement that shape. A deviation is reported, not a
 
 Scrap the sketch when implementation keeps producing friction it cannot absorb. One edge case is not enough. The signal is a pattern: the same workaround in unrelated places, several edge cases that all need special branches, escape hatches to compile, callers who must know internal rules, or two or more deviations of the same shape. Do not bolt fixes onto that design.
 
-Before editing, read the `.cursor/rules` files whose globs match the files you touch: responsibility, components, hooks, mappers, queries, DTOs, models, view-models, styles, readability, docs, classes, memoization, layers, context, and ui.
+Before editing, read the `.cursor/rules` files whose globs match the files you touch: responsibility, components, hooks, mappers, queries, DTOs, models, view-models, styles, readability, docs, classes, memoization, layers, context, and ui. When the edit touches `apps/api`, also read [FastAPI](../fastapi/SKILL.md) and the reference files it names for the code you are writing.
 
 ## Check
 
