@@ -1,0 +1,61 @@
+"""Campaign routes."""
+
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.campaigns.dto import CampaignIn, CampaignOut
+from app.campaigns.model import Campaign, CampaignDraft
+from app.campaigns.service import CampaignCallError, CampaignSetupError, Campaigns, get_campaigns
+
+router = APIRouter(prefix="/campaigns", tags=["campaigns"])
+
+CampaignsDep = Annotated[Campaigns, Depends(get_campaigns)]
+
+_STATUS = {
+    "not_found": 404,
+    "unavailable": 502,
+    "not_configured": 503,
+}
+
+
+def _http_error(error: CampaignCallError) -> HTTPException:
+    return HTTPException(status_code=_STATUS[error.kind])
+
+
+def _draft(incoming: CampaignIn) -> CampaignDraft:
+    return CampaignDraft(name=incoming.name, country=incoming.country, offer_id=incoming.offer_id)
+
+
+def _response(campaign: Campaign) -> CampaignOut:
+    return CampaignOut(id=campaign.id, name=campaign.name, deleted=campaign.deleted)
+
+
+@router.post("")
+def create_campaign(incoming: CampaignIn, campaigns: CampaignsDep) -> CampaignOut:
+    """Create one campaign in Keitaro and store the row."""
+    try:
+        created = campaigns.create(_draft(incoming))
+    except CampaignCallError as error:
+        raise _http_error(error) from None
+    except CampaignSetupError:
+        raise HTTPException(status_code=409) from None
+
+    return _response(created)
+
+
+@router.get("")
+def list_campaigns(campaigns: CampaignsDep) -> list[CampaignOut]:
+    """Every stored campaign, newest first."""
+    return [_response(campaign) for campaign in campaigns.list()]
+
+
+@router.post("/sync")
+def sync_campaigns(campaigns: CampaignsDep) -> list[CampaignOut]:
+    """Compare live rows with Keitaro and return every stored campaign."""
+    try:
+        synced = campaigns.sync()
+    except CampaignCallError as error:
+        raise _http_error(error) from None
+
+    return [_response(campaign) for campaign in synced]
