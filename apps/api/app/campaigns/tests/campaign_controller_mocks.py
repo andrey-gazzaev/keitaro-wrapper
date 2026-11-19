@@ -192,8 +192,13 @@ def remote_stream(stream_id: int, body: dict[str, object]) -> StreamRemote:
     assert isinstance(raw_filters, list)
     assert isinstance(raw_offers, list)
 
+    position = body.get("position", 0)
+    assert isinstance(position, int)
+
     return StreamRemote(
         id=stream_id,
+        name=str(body.get("name", "")),
+        position=position,
         type=str(body["type"]),
         state="active",
         schema=str(body["schema"]),

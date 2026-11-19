@@ -13,6 +13,12 @@ class StreamRemote:
     id: int
     """Keitaro flow id."""
 
+    name: str
+    """Flow name. Empty when Keitaro omits it."""
+
+    position: int
+    """Flow position. Zero when the read was built without one."""
+
     type: str
     """Flow type. Empty when Keitaro omits it."""
 

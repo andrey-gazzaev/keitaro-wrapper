@@ -9,6 +9,7 @@ from fastapi import Depends
 
 from app.campaigns.models.campaign_remote import CampaignRemote
 from app.campaigns.models.filter_remote import FilterRemote
+from app.campaigns.models.offer import Offer
 from app.campaigns.models.offer_remote import OfferRemote
 from app.campaigns.models.stream_remote import StreamRemote
 from app.campaigns.services.keitaro_error import KeitaroError
@@ -88,6 +89,28 @@ class KeitaroService:
             raise KeitaroError("unavailable")
 
         return [_stream(item) for item in payload]
+
+    def get_offer(self, offer_id: int) -> Offer:
+        """The offer for this id. A missing offer raises not_found."""
+        payload = self._json(self._raise_for_status(self._request("GET", f"/offers/{offer_id}")))
+
+        if not isinstance(payload, dict) or _whole(payload.get("id")) is None:
+            raise KeitaroError("unavailable")
+
+        return Offer(id=offer_id, name=_text(payload.get("name")))
+
+    def get_stream(self, stream_id: int) -> dict[str, object]:
+        """Live stream body. Filters and the redirect stay in the body for a later write."""
+        payload = self._json(self._raise_for_status(self._request("GET", f"/streams/{stream_id}")))
+
+        if not isinstance(payload, dict):
+            raise KeitaroError("unavailable")
+
+        return payload
+
+    def update_stream(self, stream_id: int, body: dict[str, object]) -> None:
+        """Write this stream body back. The caller chooses the offers."""
+        self._raise_for_status(self._request("PUT", f"/streams/{stream_id}", json=body))
 
     def _request(
         self,
@@ -177,8 +200,18 @@ def _stream(payload: object) -> StreamRemote:
     if stream_id is None:
         raise KeitaroError("unavailable")
 
+    if "position" not in payload or payload.get("position") is None:
+        position = 0
+    else:
+        position = _whole(payload.get("position"))
+
+        if position is None:
+            raise KeitaroError("unavailable")
+
     return StreamRemote(
         id=stream_id,
+        name=_text(payload.get("name")),
+        position=position,
         type=_text(payload.get("type")),
         state=_text(payload.get("state")),
         schema=_text(payload.get("schema")),
