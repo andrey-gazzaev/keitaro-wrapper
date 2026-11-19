@@ -1,14 +1,16 @@
 ---
-description: Backend tests sit next to the code they test; mocks live in their own file
+description: Backend tests live in the feature tests folder; mocks live beside the test
 globs: apps/api/**/*.py
 alwaysApply: false
 ---
 
 # Tests
 
-A test file sits in the same folder as the module it tests. `service.py` is covered by `test_service.py`. Put a new test there, not under `tests/`.
+Tests live in `tests/` at the root of the domain they cover, beside `dtos/`, `controllers/`, `models/`, and `services/`. A package that is not a feature, such as `app/schema`, keeps `tests/` at that package's root.
 
-Mocks, fakes, and canned responses live in a sibling file, not in the test. `test_service.py` imports them from `service_mocks.py`. The test file keeps the cases.
+The test file is named for the entity it covers: `CampaignController` is `tests/test_campaign_controller.py`. Do not nest `tests/` inside a layer, and do not put the test in the entity's folder.
+
+Mocks, fakes, and canned responses live in a sibling file inside `tests/`, not in the test. `test_campaign_controller.py` imports them from `campaign_controller_mocks.py`. The test file keeps the cases.
 
 ```python
 # Bad: the fake is built inside the test

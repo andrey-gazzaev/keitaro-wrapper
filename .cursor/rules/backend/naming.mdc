@@ -1,0 +1,26 @@
+---
+description: DTO, controller, and service names end with their role
+globs: apps/api/app/**/*.py
+alwaysApply: false
+---
+
+# Naming
+
+The class name ends with the role, so a reader can tell what the file does.
+
+- A DTO ends with `Dto`: `CampaignInDto`, `CampaignOutDto`.
+- A controller ends with `Controller`: `CampaignController`.
+- A service ends with `Service`: `CampaignService`.
+- A domain model has no role suffix: `Campaign`, `CampaignDraft`.
+
+The file name matches the class in snake case.
+
+```python
+# Bad: the wire body is named like a model
+class CampaignOut(BaseModel):
+    ...
+
+# Good
+class CampaignOutDto(BaseModel):
+    """Campaign the client can show."""
+```

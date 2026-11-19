@@ -1,0 +1,22 @@
+---
+description: A service or controller does one job; further work is a new entity
+globs: apps/api/app/**/*.py
+alwaysApply: false
+---
+
+# Responsibility
+
+A controller maps the request, calls a service, and maps the response. HTTP status belongs here. Domain rules do not.
+
+A service does one job. `CampaignService` stores and syncs campaign rows. Comparing a stored row with Keitaro is `CampaignMatchService`. The flow bodies are `CampaignStreamService`. The Admin API call is `KeitaroService`.
+
+When a method takes on a second job, that job is a new entity in its own file. A short private helper used only by that entity may stay.
+
+```python
+# Bad: the campaign service both stores the row and decides the flow schema
+def create(self, draft: CampaignDraft) -> Campaign:
+    body = {"schema": "redirect", "action_payload": "https://www.google.com"}
+
+# Good: the stream service owns the flow body
+country_stream_id = self._keitaro.create_stream(self._streams.country(campaign_id, draft.country))
+```

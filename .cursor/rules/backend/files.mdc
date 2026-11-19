@@ -1,0 +1,24 @@
+---
+description: One backend entity lives in one file
+globs: apps/api/app/**/*.py
+alwaysApply: false
+---
+
+# Files
+
+One entity per file. A class, a domain model, a DTO, and an exception each get their own file. Name the file after the entity, in snake case: `CampaignService` lives in `campaign_service.py`.
+
+Private functions used only by that entity stay in its file. A second class is a new file. The module may construct the one instance it exports. Fakes for a test stay in the mocks file named by the tests rule.
+
+```python
+# Bad: the draft and the stored campaign share a file
+class CampaignDraft:
+    ...
+
+class Campaign:
+    ...
+
+# Good: app/campaigns/models/campaign.py
+class Campaign:
+    """A campaign stored for this tracker."""
+```
