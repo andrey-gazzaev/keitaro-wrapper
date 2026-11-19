@@ -14,7 +14,16 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/health': 'http://127.0.0.1:8000',
-      '/campaigns': 'http://127.0.0.1:8000',
+      '/campaigns': {
+        target: 'http://127.0.0.1:8000',
+        bypass(req) {
+          const accept = req.headers.accept ?? '';
+
+          if (accept.includes('text/html')) {
+            return '/index.html';
+          }
+        },
+      },
     },
   },
 });
