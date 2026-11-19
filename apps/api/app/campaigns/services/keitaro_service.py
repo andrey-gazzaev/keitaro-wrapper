@@ -1,34 +1,24 @@
-"""Keitaro Admin API client."""
+"""Keitaro Admin API calls."""
 
 import os
 from collections.abc import Generator
-from typing import Literal
+from typing import Annotated
 
 import httpx
+from fastapi import Depends
 
 from app.campaigns.models.campaign_remote import CampaignRemote
 from app.campaigns.models.filter_remote import FilterRemote
 from app.campaigns.models.offer_remote import OfferRemote
 from app.campaigns.models.stream_remote import StreamRemote
+from app.campaigns.services.keitaro_error import KeitaroError
 
 
-class KeitaroError(Exception):
-    """Keitaro could not complete a call. The API key is not part of this error."""
-
-    kind: Literal["not_found", "unavailable", "not_configured"]
-    """Why the call failed: not_found, unavailable, or not_configured."""
-
-    def __init__(self, kind: Literal["not_found", "unavailable", "not_configured"]) -> None:
-        """A failed call of this kind."""
-        self.kind = kind
-        super().__init__(kind)
-
-
-class KeitaroClient:
-    """Client for the Keitaro admin API."""
+class KeitaroService:
+    """Calls the Keitaro admin API."""
 
     def __init__(self) -> None:
-        """A client for the configured tracker. Calls do not run when the base URL or API key is missing."""
+        """A service for the configured tracker. Calls do not run when the base URL or API key is missing."""
         base = os.environ.get("KEITARO_BASE_URL", "").strip().rstrip("/")
         key = os.environ.get("KEITARO_API_KEY", "").strip()
         self._http: httpx.Client | None = None
@@ -133,14 +123,17 @@ class KeitaroClient:
             raise KeitaroError("unavailable") from None
 
 
-def get_keitaro() -> Generator[KeitaroClient, None, None]:
-    """Open a Keitaro client for one request and close it afterwards."""
-    client = KeitaroClient()
+def get_keitaro() -> Generator[KeitaroService, None, None]:
+    """Open a Keitaro service for one request and close it afterwards."""
+    client = KeitaroService()
 
     try:
         yield client
     finally:
         client.close()
+
+
+KeitaroDep = Annotated[KeitaroService, Depends(get_keitaro)]
 
 
 def _ids(payload: object) -> list[int]:

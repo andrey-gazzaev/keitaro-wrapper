@@ -2,7 +2,7 @@
 
 from alembic import context
 
-from app.campaigns.service import CampaignRecord
+from app.campaigns.services.campaign_record import CampaignRecord
 from app.db import Base
 
 

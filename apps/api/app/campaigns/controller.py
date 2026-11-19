@@ -8,11 +8,13 @@ from app.campaigns.dtos.campaign_in_dto import CampaignInDto
 from app.campaigns.dtos.campaign_out_dto import CampaignOutDto
 from app.campaigns.models.campaign import Campaign
 from app.campaigns.models.campaign_draft import CampaignDraft
-from app.campaigns.service import CampaignCallError, CampaignSetupError, Campaigns, get_campaigns
+from app.campaigns.services.campaign_call_error import CampaignCallError
+from app.campaigns.services.campaign_service import CampaignService, get_campaign_service
+from app.campaigns.services.campaign_setup_error import CampaignSetupError
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
-CampaignsDep = Annotated[Campaigns, Depends(get_campaigns)]
+CampaignServiceDep = Annotated[CampaignService, Depends(get_campaign_service)]
 
 _STATUS = {
     "not_found": 404,
@@ -34,7 +36,7 @@ def _response(campaign: Campaign) -> CampaignOutDto:
 
 
 @router.post("")
-def create_campaign(incoming: CampaignInDto, campaigns: CampaignsDep) -> CampaignOutDto:
+def create_campaign(incoming: CampaignInDto, campaigns: CampaignServiceDep) -> CampaignOutDto:
     """Create one campaign in Keitaro and store the row."""
     try:
         created = campaigns.create(_draft(incoming))
@@ -47,13 +49,13 @@ def create_campaign(incoming: CampaignInDto, campaigns: CampaignsDep) -> Campaig
 
 
 @router.get("")
-def list_campaigns(campaigns: CampaignsDep) -> list[CampaignOutDto]:
+def list_campaigns(campaigns: CampaignServiceDep) -> list[CampaignOutDto]:
     """Every stored campaign, newest first."""
     return [_response(campaign) for campaign in campaigns.list()]
 
 
 @router.post("/sync")
-def sync_campaigns(campaigns: CampaignsDep) -> list[CampaignOutDto]:
+def sync_campaigns(campaigns: CampaignServiceDep) -> list[CampaignOutDto]:
     """Compare live rows with Keitaro and return every stored campaign."""
     try:
         synced = campaigns.sync()

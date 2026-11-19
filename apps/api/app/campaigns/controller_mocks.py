@@ -1,6 +1,6 @@
 """Fakes for campaign controller tests."""
 
-from app.campaigns.client import KeitaroError
+from app.campaigns.services.keitaro_error import KeitaroError
 from app.campaigns.models.campaign_remote import CampaignRemote
 from app.campaigns.models.filter_remote import FilterRemote
 from app.campaigns.models.offer_remote import OfferRemote
