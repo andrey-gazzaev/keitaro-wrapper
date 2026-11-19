@@ -1,0 +1,35 @@
+---
+description: memo, useMemo, and useCallback only when they skip real work
+alwaysApply: false
+---
+# Memoization
+
+`memo`, `useMemo`, and `useCallback` are performance optimizations. The screen must behave the same without them. Leave them out unless one of the cases below applies. When the React Compiler is enabled, leave them out as well: the compiler already caches components, values, and handlers.
+
+This app replaces a page or a section at a time. That kind of update does not need memoization. Add it when a render is visibly slow. A calculation is slow when it loops or builds thousands of objects. Mapping a list is not slow.
+
+`memo` skips a re-render when every prop is `Object.is` to the previous prop. The component still re-renders for its own state and for context it reads. It pays off only when those props keep the same references across the parent render, and the skipped render is expensive. Skip the second argument: a custom comparison has to check every prop, including functions, and a deep compare can freeze the page.
+
+`useMemo` caches a calculation. Use it when the calculation is slow and its dependencies rarely change, when the value is a prop of a `memo` component, or when another hook depends on that value. A context value is the last case: a new object on each render updates every reader.
+
+`useCallback` caches a function. It is `useMemo(() => fn, deps)` and nothing more. Use it when that function is a prop of a `memo` component or a dependency of another hook. When the handler only writes the next state, pass an updater so the function has no dependency: `setTheme((theme) => (theme === 'dark' ? 'light' : 'dark'))`.
+
+A wrapper that accepts `children` already keeps those children from re-rendering when its own state changes. Keep form state in the form.
+
+```tsx
+// Bad: memo never hits, because onEdit is a new function on every keystroke
+export const UserTable = memo(function UserTable({ rows, onEdit }: Props) {
+  return null;
+});
+
+<UserTable rows={rows} onEdit={(id) => edit(id)} />
+
+// Good: event handler is a memoized function so it skips a render when the id is the same
+export const UserTable = memo(function UserTable({ rows, onEdit }: Props) {
+  return null;
+});
+
+const onEdit = useCallback((id: string) => edit(id), [edit]);
+
+<UserTable rows={rows} onEdit={onEdit} />
+```

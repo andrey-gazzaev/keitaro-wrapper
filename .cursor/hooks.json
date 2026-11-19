@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "python3 .cursor/hooks/commit.py",
+        "matcher": "Shell",
+        "failClosed": true,
+        "timeout": 15
+      }
+    ]
+  }
+}

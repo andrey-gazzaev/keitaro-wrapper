@@ -1,0 +1,47 @@
+---
+description: Blank lines between logical steps, not a solid block of code
+globs: apps/web/src/**/*.{ts,tsx}
+alwaysApply: true
+---
+
+# Readability
+
+Separate steps with one blank line. A function, hook, component, or class is not one paragraph. Do not put a blank line after every statement, and do not put two blank lines in a row.
+
+Inside a function, hook, or component, group lines that answer one question:
+
+- hooks and state
+- values derived from that state
+- handlers
+- the `return`
+
+A comment stays on the line immediately above the declaration it documents. A blank line there breaks the field documentation check.
+
+In JSX, leave a blank line between sibling regions such as a heading, filters, and a list. Do not break the props of one element apart.
+
+Leave a blank line between methods of a class, and between top-level functions in a file.
+
+```tsx
+// Bad: state, a derived value, and the markup are one block
+const [query, setQuery] = useState('');
+const needle = query.trim();
+return (
+  <Panel>
+    <h1>Draft</h1>
+    <Pills />
+  </Panel>
+);
+
+// Good
+const [query, setQuery] = useState('');
+
+const needle = query.trim();
+
+return (
+  <Panel>
+    <h1>Draft</h1>
+
+    <Pills />
+  </Panel>
+);
+```

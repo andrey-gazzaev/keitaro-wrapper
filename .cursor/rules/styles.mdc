@@ -1,0 +1,19 @@
+---
+description: Local CSS modules and a global theme
+alwaysApply: false
+---
+# Styles
+
+Styles used by only one component live next to it in a `*.module.css` file. Class names in a module are camelCase.
+
+`src/app/global.css` holds only the theme: color tokens, typography, and constant spacing. Shared text states stay there too: `.sr`, `.muted`, `.status`, `.win`, `.loss`.
+
+Do not copy repeated layout into feature modules. Put that layout in a component from `@/ui`.
+
+```css
+/* Bad: src/app/global.css owns a screen grid */
+.records { display: grid; gap: 12px; }
+
+/* Good: src/feature/record-cards/record-cards.module.css */
+.records { display: grid; gap: 12px; }
+```

@@ -1,0 +1,22 @@
+---
+description: Exported APIs are documented in brief English, without implementation detail
+alwaysApply: false
+---
+# Documentation
+
+Every exported function, class, method, type, constant, and component has a short English JSDoc comment. Every field of a type or interface has one too, immediately above the field.
+
+- Say what the value means: the result, the unit, and when it is empty.
+- Do not retell the implementation. A comment that walks through the steps, names the formula, or repeats the code is noise.
+- One or two sentences. Skip comments on re-exports and on private helpers.
+- Re-export barrels stay uncommented. The declaration they point at carries the comment.
+
+```typescript
+// Bad: the comment repeats the steps
+/** Filters rows, sorts by start time, and slices to 40. */
+export function recentPerformances(rows: readonly MatchPerformance[]): readonly MatchPerformance[] {}
+
+// Good: the comment states the result
+/** Newest matches, optionally limited to one hero. */
+export function recentPerformances(rows: readonly MatchPerformance[]): readonly MatchPerformance[] {}
+```

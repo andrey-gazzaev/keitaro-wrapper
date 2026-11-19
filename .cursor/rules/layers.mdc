@@ -1,0 +1,36 @@
+---
+description: Application layers and the ban on sibling imports
+alwaysApply: false
+---
+# Layers
+
+Dependency direction: `pages → widgets | feature → context → hooks → queries → dtos | services → models`. Features and hooks also use `view-models` and `mappers`. `mappers` use `models`, `view-models`, and `services`. DTO mappers live inside `dtos`. `view-models` use `models`. `ui` does not know the domain.
+
+- `app` is the entry point, navigation, and route composition.
+- `pages` of one task import a feature. Pages of several tasks import a widget. Page components live in `src/views`.
+- `widgets` compose several features. They do not import `dtos` or `services`.
+- `feature` is one task: a form, table, or card. It does not import widgets. Its view-model hook lives in `hooks`.
+- `context` shares one load with a subtree. It may use `hooks`, `queries`, `services`, `models`, and `view-models`. It does not import `dtos`, `feature`, `widgets`, `pages`, `app`, or `ui`. The raw context is not re-exported. A hook reads it and throws outside the provider.
+- `hooks` are the view-model hooks features share. They may use `queries`, `services`, `models`, `view-models`, and `mappers`. They do not import `dtos`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
+- `mappers` convert domain and view-models. They may use `models`, `view-models`, and `services`. They do not import `dtos`, `queries`, `hooks`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
+- `view-models` are the shapes a screen shows. They may use `models`. They do not import `services`, `dtos`, `queries`, `hooks`, `mappers`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
+- `queries` are React Query hooks. They do not import `services`, `mappers`, `hooks`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
+- `ui` is a domain-free library. It does not import `models`, `view-models`, `mappers`, `services`, `dtos`, `queries`, `hooks`, `context`, `feature`, `widgets`, `pages`, or `app`.
+
+A module folder imports only its own files (`./`). A feature does not import a feature. The same applies to `pages`, `widgets`, `context`, and `ui`. A layer `index.ts` only re-exports its children.
+
+When several modules need the same data, a context provider loads it and the modules read it with the context hook. Props carry what differs per instance, such as the axes of one chart. The provider stays next to that tree, not in the app root.
+
+```tsx
+// Bad: each card loads the player again
+export function MetricChart() {
+  const player = usePlayerData(accountId);
+  return null;
+}
+
+// Good: the board provider loads once, the card reads the hook
+export function MetricChart() {
+  const player = usePlayerDataContext();
+  return null;
+}
+```

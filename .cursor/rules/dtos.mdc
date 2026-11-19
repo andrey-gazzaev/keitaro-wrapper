@@ -1,0 +1,24 @@
+---
+description: DTO schemas, API classes, mappers, and axios
+alwaysApply: false
+---
+# DTOs
+
+Schemas, API clients, and mappers live in three folders, each split by task: `schemas/{task}`, `api/{task}`, `mappers/{task}`.
+
+- One Zod schema per file. The DTO type is declared next to the schema. A list is its own schema. A nested schema is imported.
+- Mappers live in `mappers/{task}` and follow the mappers rule.
+- A task API is a class. Methods are not static. Create one instance in the folder and use it: `catalogApi`, `playerApi`.
+- The client uses axios. JSON is already in `response.data`, so there is no `getJson` wrapper: `schema.parse(data)`.
+- Replace `.then` and `.catch` chains with `async`/`await`.
+
+```typescript
+// Bad: a static method and a JSON wrapper
+const data = await getJson('/api/constants');
+
+// Good
+public async load(): Promise<GameCatalog> {
+  const { data } = await api.get('/api/constants');
+  return mapCatalog(catalogSchema.parse(data));
+}
+```

@@ -1,0 +1,31 @@
+---
+description: View models are one type per file, immutable, and shared across features
+alwaysApply: false
+---
+# View models
+
+Shapes the screen shows live in `src/view-models`. Other layers import them only through `@/view-models`.
+
+- One view model per file. The file name matches the type: `NamedItemVm` becomes `named-item-vm.ts`.
+- The type name ends with `Vm`.
+- A view model is not changed after it is created. Every field is `readonly`, and lists are `readonly T[]`.
+- The type and every field have a short English comment: what it shows, and when the value is empty. Leave a blank line between fields. The comment stays immediately above its field.
+- A view model may use types from `@/models`. It does not import `services`, `dtos`, `queries`, `feature`, `widgets`, `pages`, `app`, or `ui`.
+
+```typescript
+// Bad: the same shape declared again inside a feature
+export type NamedItem = { id: number; name: string; image: string };
+
+// Good
+/** An item with its catalog name and image. */
+export type NamedItemVm = {
+  /** Item id in the Dota catalog. */
+  readonly id: number;
+
+  /** Display name. */
+  readonly name: string;
+
+  /** Image URL. Empty when the catalog has no image. */
+  readonly image: string;
+};
+```

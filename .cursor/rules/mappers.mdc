@@ -1,0 +1,28 @@
+---
+description: Pure conversions between DTO, domain, and view-model
+alwaysApply: false
+---
+# Mappers
+
+A mapper converts a type from one layer into a type from another. It does not fetch, validate, or keep state.
+
+- DTO and domain convert in `src/dtos/mappers/{task}`. `mapProduct` takes a `ProductDto` and returns a `Product`. The reverse, `mapProductDto`, lives in that same file.
+- Domain and view-model convert in `src/mappers/{view-model}`. `mapProductCard` takes a `Product` and returns a `ProductCardVm`. The reverse lives in that same file.
+- One file per model. The file name matches the function: `map-product.ts`, `map-product-card.ts`. A list mapper stays in that file. Do not add mapper tests.
+- The name is `map` plus the type it returns. Omit the `Vm` suffix. A function that returns a DTO keeps `Dto`, so it does not collide with the domain mapper.
+- Write the reverse when a caller needs the other layer's type. Do not add a mapper that copies a value into the same shape.
+
+A mapper may call another mapper and a pure function from `services`, such as `formatPrice`. A view-model mapper imports `models`, `view-models`, and `services` only. A DTO mapper also imports its schema type. Neither imports `queries`, `hooks`, `feature`, `ui`, or `app`.
+
+An API method maps the parsed body. A hook calls the mapper. Wrap that call in `useMemo` only when the memoization rule says so. A feature maps a view-model back into a domain value by calling the mapper. Do not build the other layer's object inline.
+
+```typescript
+// Bad: the hook copies fields into the card
+const cards = products.map((product) => ({
+  id: product.id,
+  priceLabel: formatPrice(product.price),
+}));
+
+// Good
+const cards = products.map(mapProductCard);
+```

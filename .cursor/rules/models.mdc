@@ -1,0 +1,29 @@
+---
+description: Domain models are one type per file, immutable, and documented
+globs: apps/web/src/models/**/*.ts
+alwaysApply: true
+---
+
+# Models
+
+Domain types live in `src/models`. Other layers import them only through `@/models`.
+
+- One model type per file. The file name matches the type: `MatchPerformance` becomes `match-performance.ts`.
+- A model is not changed after it is created. Every field is `readonly`, and lists are `readonly T[]`. Build the next state as a new object.
+- The type and every field have a short English comment: what it is, its unit, and when the value is empty.
+- Leave a blank line between fields. The comment stays immediately above its field.
+
+```typescript
+// Bad: several models in one file, and fields that can be reassigned
+export type HeroStat = { heroId: number; games: number };
+
+// Good
+/** Hero summary stored on a player snapshot. */
+export type HeroStat = {
+  /** Hero id in the Dota catalog. */
+  readonly heroId: number;
+
+  /** Matches played on this hero. */
+  readonly games: number;
+};
+```

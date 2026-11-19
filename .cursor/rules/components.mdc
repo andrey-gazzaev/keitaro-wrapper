@@ -1,0 +1,16 @@
+---
+description: One component per file, exported as a named function
+alwaysApply: false
+---
+# Components
+
+A file contains one React component. Export it as a named function. That name is what React shows in DevTools.
+
+Wrap it in `memo` only when the memoization rule says the skip pays off.
+
+```tsx
+/** Centered column for one page. */
+export function Page({ children }: { children: ReactNode }) {
+  return <section>{children}</section>;
+}
+```

@@ -1,0 +1,35 @@
+---
+description: One responsibility per component, hook, and class
+alwaysApply: false
+---
+# Responsibility
+
+A component, hook, or class has one reason to change. A short helper used only there may stay in the same file as a private function.
+
+A component renders one region and may hold that region's UI state, such as a search string or an open row. Filtering, aggregation, and formatting that take more than a few lines move to a named function or to the hook that owns the data.
+
+When the returned JSX has several regions a reader would name, each region is its own component in the same folder. One component per file still applies.
+
+A hook answers one question. A hook that only composes other hooks stays thin. Mapping goes to a mapper. The hook calls that mapper. UI state stays in the component.
+
+A hook used by one feature lives next to that feature. A hook shared by several features lives in `src/hooks`.
+
+A class does one job. A method that does not use `this` is a function. Do not split a class or a service file that is already one task, such as an API client, `DraftOdds`, or the performance stats.
+
+Do not extract a single element, a status line, a hook that only forwards one query, or a helper of a few lines used once.
+
+```tsx
+// Bad: the screen filters the catalog and renders every region
+const classes = picks.classes.flatMap((heroClass) => heroClass.heroes.filter((hero) => hero.name.includes(needle)));
+return (
+  <Panel>
+    <DraftTeam slots={picks.allySlots} />
+    {classes.map((heroClass) => (
+      <ThumbGrid key={heroClass.id} />
+    ))}
+  </Panel>
+);
+
+// Good: the grid owns the search
+<DraftHeroes classes={picks.classes} taken={picks.taken} onToggle={picks.toggleHero} />
+```

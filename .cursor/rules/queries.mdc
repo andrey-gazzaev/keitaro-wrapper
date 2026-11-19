@@ -1,0 +1,34 @@
+---
+description: React Query hooks live one per folder, without classes or queryOptions
+alwaysApply: false
+---
+# Queries
+
+Every backend hook lives in `src/queries`, grouped by task. That task's keys live in its `keys` folder.
+
+- One hook, one folder: `use-player-snapshot/use-player-snapshot.ts`.
+- Keys and hooks are plain functions and objects, not classes.
+- Do not extract a separate `queryOptions` helper. Write the options directly inside `useQuery`, `useQueries`, or `fetchQuery`.
+- The key factory is an object. Invalidation uses a prefix: `playerKeys.detail(id)` covers both the snapshot and the matches.
+
+```typescript
+// Bad: a class of keys and a detached options helper
+export class PlayerKeys {
+  static detail(id: number) {
+    return ['player', id];
+  }
+}
+
+// Good
+export const playerKeys = {
+  all: ['player'] as const,
+  detail: (accountId: number) => [...playerKeys.all, accountId] as const,
+};
+
+export function usePlayerSnapshot(accountId: number) {
+  return useQuery({
+    queryKey: playerKeys.detail(accountId),
+    queryFn: () => playerApi.snapshot(accountId),
+  });
+}
+```

@@ -1,0 +1,23 @@
+---
+description: How a shared load is passed through React context
+alwaysApply: false
+---
+# Context
+
+A shared load lives in `src/context`, one module per load. The barrel exports the provider and the reader hook. It does not export the context object.
+
+- Create the context with `undefined`. The reader hook throws when it is missing, so a caller outside the provider fails immediately.
+- The provider owns the fetch. A component that reads the hook does not call that fetch itself.
+- Memoize the provider value. A new object on every render updates every reader.
+- Put the provider on the tree that needs the data, not in the app root.
+- The context holds only the shared load. A prop carries what differs per instance, such as the axes or the hero of one chart.
+- `hooks` do not import `context`. The provider calls the hook that loads the data.
+
+```tsx
+// Bad: the card fetches, and the raw context is public
+const player = usePlayerData(accountId);
+const value = useContext(PlayerDataContext);
+
+// Good: the board provides the load, the card reads the hook
+const player = usePlayerDataContext();
+```

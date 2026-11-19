@@ -1,0 +1,31 @@
+---
+description: Every class member has an explicit public, protected, or private modifier
+alwaysApply: false
+---
+# Classes
+
+Every field, constructor, and method has an access modifier: `public`, `protected`, or `private`. Do not leave the default modifier implicit.
+
+```typescript
+// Bad: load is public only because TypeScript defaults to public
+export class CatalogApi {
+  private request: Promise<GameCatalog> | null = null;
+
+  load(): Promise<GameCatalog> {
+    return this.request ?? this.fetchCatalog();
+  }
+}
+
+// Good
+export class CatalogApi {
+  private request: Promise<GameCatalog> | null = null;
+
+  public load(): Promise<GameCatalog> {
+    return this.request ?? this.fetchCatalog();
+  }
+
+  private fetchCatalog(): Promise<GameCatalog> {
+    return Promise.resolve({ heroes: [], items: [] });
+  }
+}
+```

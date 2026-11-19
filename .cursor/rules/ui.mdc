@@ -1,0 +1,27 @@
+---
+description: Handwritten UI library with no domain knowledge
+alwaysApply: false
+---
+# UI
+
+`src/ui` is a small handwritten library, published through `@/ui`. The page shell lives there too: `Page`, `Shell`, `Topbar`.
+
+A component takes `children` and simple props such as `variant` and `selected`. It does not know heroes, matches, queries, or pages.
+
+A UI component does not import another UI component. The parent — a feature, page, or app — composes the layout. `index.ts` only re-exports the components.
+
+```tsx
+// Bad: a UI component imports the domain or another UI component
+import { PlayerHeader } from '@/feature';
+import { Button } from '../button/button';
+
+// Good: the feature composes UI
+export function SearchPlayer() {
+  return (
+    <form>
+      <TextField tone="surface" />
+      <Button type="submit">Find</Button>
+    </form>
+  );
+}
+```
