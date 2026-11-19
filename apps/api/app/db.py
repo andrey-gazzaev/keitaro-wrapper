@@ -2,9 +2,15 @@
 
 import os
 from collections.abc import Generator
+from typing import Annotated
 
+from dotenv import load_dotenv
+from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.pool import StaticPool
+
+load_dotenv(override=False)
 
 
 class Base(DeclarativeBase):
@@ -19,23 +25,33 @@ def database_url() -> str:
     )
 
 
-def _connect_args(url: str) -> dict[str, bool]:
+def _engine(url: str):
     if url.startswith("sqlite"):
-        return {"check_same_thread": False}
+        return create_engine(
+            url,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
 
-    return {}
+    return create_engine(url)
 
 
-_url = database_url()
-engine = create_engine(_url, connect_args=_connect_args(_url))
+engine = _engine(database_url())
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
 def get_session() -> Generator[Session, None, None]:
-    """Open a session for one request and close it afterwards."""
+    """Open a session, commit when the request succeeds, and roll back when it fails."""
     session = SessionLocal()
 
     try:
         yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
     finally:
         session.close()
+
+
+SessionDep = Annotated[Session, Depends(get_session, scope="function")]
