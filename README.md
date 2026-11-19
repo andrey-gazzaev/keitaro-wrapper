@@ -7,6 +7,8 @@
 
 Бизнес-процесс черновика потоков и тест-кейсы по нему: [docs/wrapper.md](docs/wrapper.md).
 
+Создатель кампаний: [docs/campaign-creator.md](docs/campaign-creator.md).
+
 ## Запуск
 
 Зависимости API и страницы:
