@@ -19,7 +19,9 @@ export function CampaignBoard() {
       {board.campaigns.length > 0 ? (
         <ul className={styles.rows}>
           {board.campaigns.map((campaign) => (
-            <li key={campaign.id}>{campaign.label}</li>
+            <li key={campaign.id}>
+              {campaign.href === '' ? campaign.label : <a href={campaign.href}>{campaign.label}</a>}
+            </li>
           ))}
         </ul>
       ) : null}
