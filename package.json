@@ -1,0 +1,13 @@
+{
+  "name": "keitaro-wrapper",
+  "private": true,
+  "packageManager": "pnpm@12.21.0",
+  "scripts": {
+    "deps": "bash scripts/deps.sh",
+    "dev": "bash scripts/dev.sh",
+    "db:up": "bash scripts/db-up.sh",
+    "db:down": "docker compose down",
+    "dev:api": "bash scripts/api-local.sh",
+    "api:docker": "bash scripts/api-docker.sh"
+  }
+}
