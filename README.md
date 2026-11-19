@@ -1,6 +1,6 @@
 # keitaro-wrapper
 
-Обёртка над Keitaro. Сейчас здесь только каркас: один эндпоинт и одна страница.
+Обёртка над Keitaro.
 
 - `apps/api` — FastAPI и SQLAlchemy
 - `apps/web` — React, Vite, Testing Library
