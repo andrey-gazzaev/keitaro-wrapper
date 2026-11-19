@@ -29,6 +29,9 @@ include = ["app*"]
 [tool.setuptools.package-data]
 "app.schema" = ["versions/*.py"]
 
+[tool.fastapi]
+entrypoint = "app.main:app"
+
 [tool.pytest.ini_options]
 testpaths = ["app"]
 pythonpath = ["."]
