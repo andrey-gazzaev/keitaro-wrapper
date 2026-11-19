@@ -1,0 +1,34 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f1ea;
+  --fg: #1c1915;
+  --muted: #6b645c;
+  --line: #e4ddd2;
+  --font: "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+  --sans: "Avenir Next", "Segoe UI", sans-serif;
+  --space: 1rem;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  line-height: 1.5;
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 2.75rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.status {
+  margin: 0;
+}
