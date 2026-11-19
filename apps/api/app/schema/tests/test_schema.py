@@ -16,12 +16,12 @@ def test_fresh_database_creates_campaigns_and_records_the_revision() -> None:
     apply_schema(engine)
 
     assert _has_campaigns(engine)
-    assert _revision(engine) == "20261119_campaigns"
+    assert _revision(engine) == "20261120_editor"
 
     apply_schema(engine)
 
     assert _has_campaigns(engine)
-    assert _revision(engine) == "20261119_campaigns"
+    assert _revision(engine) == "20261120_editor"
 
 
 def test_existing_campaigns_table_keeps_the_row() -> None:
@@ -85,7 +85,7 @@ def test_existing_campaigns_table_keeps_the_row() -> None:
         revision = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
 
     assert stored == "Spring"
-    assert revision == "20261119_campaigns"
+    assert revision == "20261120_editor"
 
 
 def _sqlite() -> Engine:
