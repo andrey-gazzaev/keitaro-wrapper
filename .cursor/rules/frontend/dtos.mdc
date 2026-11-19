@@ -1,5 +1,6 @@
 ---
 description: DTO schemas, API classes, mappers, and axios
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # DTOs

@@ -1,5 +1,6 @@
 ---
 description: One responsibility per component, hook, and class
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Responsibility

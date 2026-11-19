@@ -1,0 +1,23 @@
+---
+description: Backend tests sit next to the code they test; mocks live in their own file
+globs: apps/api/**/*.py
+alwaysApply: false
+---
+
+# Tests
+
+A test file sits in the same folder as the module it tests. `service.py` is covered by `test_service.py`. Put a new test there, not under `tests/`.
+
+Mocks, fakes, and canned responses live in a sibling file, not in the test. `test_service.py` imports them from `service_mocks.py`. The test file keeps the cases.
+
+```python
+# Bad: the fake is built inside the test
+def test_create_stores_one_row() -> None:
+    class FakeSession:
+        def add(self, row: object) -> None:
+            return None
+
+# Good: the test asks the mocks file for a fake
+def test_create_stores_one_row() -> None:
+    session = fake_session()
+```

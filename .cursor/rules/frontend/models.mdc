@@ -1,7 +1,7 @@
 ---
 description: Domain models are one type per file, immutable, and documented
 globs: apps/web/src/models/**/*.ts
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Models

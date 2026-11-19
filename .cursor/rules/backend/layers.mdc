@@ -1,0 +1,25 @@
+---
+description: The API is a controller, a service, and a domain model
+globs: apps/api/app/**/*.py
+alwaysApply: false
+---
+
+# Layers
+
+The API has three layers. Calls point one way: controller → service → domain model.
+
+- The controller accepts the request and returns the response. It maps the incoming body into a request DTO, calls the service, and maps the result into a response DTO. The response DTO lists only the fields the client may see.
+- The service holds the domain logic: calculations, and the database or ORM. It accepts and returns domain models. It does not build a DTO and it does not raise an HTTP error.
+- The domain model is the application's own type. It does not import a controller, a service, a DTO, or a database session. The table record stays inside the service.
+
+One feature folder holds `controller.py`, `service.py`, `model.py`, and `dto.py`. The controller owns the router. It does not query the database.
+
+```python
+# Bad: the service returns the wire body, token included
+def create(self, incoming: CampaignIn) -> CampaignOut:
+    return CampaignOut(id=row.id, name=row.name, token=row.token)
+
+# Good: the service returns the model; the controller maps the response DTO
+def create(self, draft: CampaignDraft) -> Campaign:
+    return Campaign(id=row.id, name=row.name)
+```

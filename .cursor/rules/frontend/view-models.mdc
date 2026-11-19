@@ -1,5 +1,6 @@
 ---
 description: View models are one type per file, immutable, and shared across features
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # View models

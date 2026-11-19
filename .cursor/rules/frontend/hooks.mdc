@@ -1,5 +1,6 @@
 ---
 description: Custom hooks share stateful logic and name a concrete use case
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Hooks

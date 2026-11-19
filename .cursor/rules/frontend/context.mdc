@@ -1,5 +1,6 @@
 ---
 description: How a shared load is passed through React context
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Context

@@ -1,5 +1,6 @@
 ---
 description: memo, useMemo, and useCallback only when they skip real work
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Memoization

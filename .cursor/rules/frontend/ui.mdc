@@ -1,5 +1,6 @@
 ---
 description: Handwritten UI library with no domain knowledge
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # UI

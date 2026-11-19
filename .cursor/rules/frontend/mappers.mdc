@@ -1,5 +1,6 @@
 ---
 description: Pure conversions between DTO, domain, and view-model
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Mappers

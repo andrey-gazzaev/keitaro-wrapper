@@ -38,7 +38,7 @@ Read [criteria.md](criteria.md) and walk every section that applies to the diff:
 6. Testing and quality assurance
 7. Overall PR quality
 
-Also read the agreed sketch and the `.cursor/rules` files whose globs match the diff. A broken rule, a departure from the sketch, or a broken contract is a blocker.
+Also read the agreed sketch and the rules for the stack in the diff: `.cursor/rules/frontend` when it touches `apps/web`, `.cursor/rules/backend` when it touches `apps/api`. A broken rule, a departure from the sketch, or a broken contract is a blocker.
 
 Language sections: walk JavaScript/TypeScript, Python, SQL/Database, and Frontend. Skip Java, Go, and Ruby when the diff contains none of that code. The web app is React, Vite, and TypeScript. The API is FastAPI and SQLAlchemy.
 

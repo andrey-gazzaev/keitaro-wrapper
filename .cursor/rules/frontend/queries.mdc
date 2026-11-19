@@ -1,5 +1,6 @@
 ---
 description: React Query hooks live one per folder, without classes or queryOptions
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Queries

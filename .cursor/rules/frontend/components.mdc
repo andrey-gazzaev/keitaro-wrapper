@@ -1,5 +1,6 @@
 ---
 description: One component per file, exported as a named function
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Components

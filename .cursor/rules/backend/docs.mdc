@@ -1,0 +1,35 @@
+---
+description: Backend classes and domain models are documented in brief English, without implementation detail
+globs: apps/api/app/**/*.py
+alwaysApply: false
+---
+
+# Documentation
+
+A class and a domain model are documented the same way. Each has a short English docstring. Each public attribute and each public method has one too.
+
+- Say what it is or what it returns, and when the value is empty.
+- Do not retell the implementation. A docstring that lists the steps, names the query, or repeats the code is noise.
+- One or two sentences. Skip private helpers.
+- The class or method docstring is the first statement in the body. An attribute docstring is the string on the next line.
+
+```python
+# Bad: the docstring walks the steps
+class Campaigns:
+    """Loads rows, drops tombstones, and sorts by created_at."""
+
+    def list(self) -> list[Campaign]:
+        """Runs a select, skips deleted_at, and maps each row."""
+        ...
+
+# Good
+class Campaign:
+    """A campaign stored for this tracker."""
+
+    name: str
+    """Name shown to the operator. Empty before the campaign is named."""
+
+    def renamed(self, name: str) -> Campaign:
+        """This campaign under another name."""
+        ...
+```

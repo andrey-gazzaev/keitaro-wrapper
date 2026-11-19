@@ -1,5 +1,6 @@
 ---
 description: Local CSS modules and a global theme
+globs: apps/web/**/*.{css,ts,tsx}
 alwaysApply: false
 ---
 # Styles

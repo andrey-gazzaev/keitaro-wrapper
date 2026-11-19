@@ -1,5 +1,6 @@
 ---
 description: Application layers and the ban on sibling imports
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Layers

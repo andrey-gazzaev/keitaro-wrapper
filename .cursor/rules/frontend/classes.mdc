@@ -1,5 +1,6 @@
 ---
 description: Every class member has an explicit public, protected, or private modifier
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Classes

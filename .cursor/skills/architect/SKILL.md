@@ -35,9 +35,9 @@ When the plan cannot be carried out without an answer, ask the question, set `St
 
 ## Ground
 
-Trace every subsystem the change touches and explain how it actually works. Naming a file is not grounding. Read the nearest screen or API module and the `.cursor/rules` files whose globs match the files in the task. Do not copy those rules into the handoff.
+Trace every subsystem the change touches and explain how it actually works. Naming a file is not grounding. Read the nearest screen or API module and the rules for that stack: `.cursor/rules/frontend` for `apps/web`, `.cursor/rules/backend` for `apps/api`. Do not copy those rules into the handoff.
 
-Web direction is `pages` → `widgets` | `feature` → `context` → `hooks` → `queries` → `dtos` | `services` → `models`, plus `view-models`, `mappers`, and `ui`. Page components live in `src/views`. `widgets` compose several features. `apps/api` stays FastAPI: a router, a Pydantic model, and SQLAlchemy. Do not move web layers into the API.
+Web direction is `pages` → `widgets` | `feature` → `context` → `hooks` → `queries` → `dtos` | `services` → `models`, plus `view-models`, `mappers`, and `ui`. Page components live in `src/views`. `widgets` compose several features. The API is three layers: a controller, a service, and a domain model. The controller maps the body through a DTO. Do not move web layers into the API.
 
 Skip Ground only when the work is genuinely greenfield and has no surrounding system.
 

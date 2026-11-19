@@ -1,5 +1,6 @@
 ---
 description: Exported APIs are documented in brief English, without implementation detail
+globs: apps/web/**/*.{ts,tsx}
 alwaysApply: false
 ---
 # Documentation

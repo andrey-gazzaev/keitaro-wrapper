@@ -1,7 +1,7 @@
 ---
 description: Blank lines between logical steps, not a solid block of code
 globs: apps/web/src/**/*.{ts,tsx}
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Readability
