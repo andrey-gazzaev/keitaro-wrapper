@@ -1,14 +1,9 @@
 """HTTP application."""
 
-from typing import Literal
-
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from sqlalchemy import text
-from sqlalchemy.orm import Session
 
-from app.db import get_session
+from app.health.controller import router as health_router
 
 app = FastAPI(title="Keitaro wrapper")
 
@@ -20,16 +15,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-class HealthOut(BaseModel):
-    """Reachability of the API and the database."""
-
-    status: Literal["ok"]
-
-
-@app.get("/health")
-def read_health(session: Session = Depends(get_session)) -> HealthOut:
-    """Report that the process is up and the database accepts a query."""
-    session.execute(text("SELECT 1"))
-
-    return HealthOut(status="ok")
+app.include_router(health_router)
