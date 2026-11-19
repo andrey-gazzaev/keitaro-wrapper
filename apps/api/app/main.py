@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.campaigns.controller import router as campaign_router
+from app.campaigns.controllers.campaign_controller import campaign_controller
 from app.db import engine
 from app.health.controllers.health_controller import health_controller
 from app.schema import apply_schema
@@ -30,5 +30,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(campaign_router)
+app.include_router(campaign_controller.router)
 app.include_router(health_controller.router)

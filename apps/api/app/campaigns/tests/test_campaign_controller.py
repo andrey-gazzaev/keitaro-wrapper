@@ -8,10 +8,10 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
-from app.campaigns.controller_mocks import FakeKeitaro, fake_keitaro, remote_stream
 from app.campaigns.services.campaign_record import CampaignRecord
 from app.campaigns.services.keitaro_error import KeitaroError
 from app.campaigns.services.keitaro_service import get_keitaro
+from app.campaigns.tests.campaign_controller_mocks import FakeKeitaro, fake_keitaro, remote_stream
 from app.db import SessionLocal, engine
 from app.main import app
 from app.schema import apply_schema
