@@ -4,12 +4,14 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator
 
+_NAME_PREFIX = "test_gazzaev_"
+
 
 class CampaignInDto(BaseModel):
     """Name, country, and offer used to create one campaign."""
 
     name: str
-    """Name shown to the operator. Empty and surrounding space are rejected."""
+    """Name shown to the operator. Empty, surrounding space, and a missing prefix are rejected."""
 
     country: str
     """Two-letter country code. A longer or non-letter value is rejected."""
@@ -23,7 +25,7 @@ class CampaignInDto(BaseModel):
         """The name without surrounding space."""
         trimmed = value.strip()
 
-        if trimmed == "":
+        if trimmed == "" or not trimmed.startswith(_NAME_PREFIX):
             raise ValueError("Name is empty.")
 
         return trimmed
