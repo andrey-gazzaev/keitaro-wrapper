@@ -1,5 +1,5 @@
-import { ApiStatus } from '@/feature/api-status/api-status';
 import { Page } from '@/ui';
+import { CampaignCreator } from '@/widgets/campaign-creator/campaign-creator';
 
 /** First page of the Keitaro wrapper. */
 export function HomePage() {
@@ -9,7 +9,7 @@ export function HomePage() {
 
       <p className="muted">Обёртка над трекером.</p>
 
-      <ApiStatus />
+      <CampaignCreator />
     </Page>
   );
 }
