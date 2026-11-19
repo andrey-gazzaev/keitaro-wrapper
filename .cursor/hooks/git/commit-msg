@@ -1,0 +1,16 @@
+#!/bin/sh
+# Drop trailers the environment appends after the message check.
+python3 - "$1" << 'PY'
+import pathlib
+import re
+import sys
+
+path = pathlib.Path(sys.argv[1])
+trailer = re.compile(r"^(co-authored-by|made-with)\s*:", re.IGNORECASE)
+lines = [line for line in path.read_text().splitlines() if not trailer.match(line.strip())]
+
+while lines and lines[-1].strip() == "":
+    lines.pop()
+
+path.write_text("\n".join(lines) + "\n")
+PY

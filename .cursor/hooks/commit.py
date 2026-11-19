@@ -6,6 +6,7 @@ import re
 import shlex
 import subprocess
 import sys
+from pathlib import Path
 
 MESSAGE_RULE = (
     "Subject is an imperative English sentence with no trailing period and no type prefix. "
@@ -70,6 +71,7 @@ def main() -> None:
 
 def decide(command: str, cwd: str, tool_input: dict) -> dict:
     try:
+        command = drop_forbidden_trailers(command)
         tokens = shlex_split(command)
     except ValueError:
         if is_commit_command(command):
@@ -104,7 +106,7 @@ def decide(command: str, cwd: str, tool_input: dict) -> dict:
         )
 
     updated = dict(tool_input)
-    updated["command"] = with_author(command, prefix)
+    updated["command"] = with_author(use_message_hook(command), prefix)
 
     if updated["command"] == command:
         return {"permission": "allow"}
@@ -401,6 +403,45 @@ def config_value(cwd: str, key: str) -> str | None:
         return None
 
     return value
+
+
+TRAILER_FLAG = re.compile(
+    r"""--trailer(?:=("[^"]*"|'[^']*'|\S+)|[ \t]+("[^"]*"|'[^']*'|\S+))"""
+)
+
+
+def drop_forbidden_trailers(command: str) -> str:
+    def replace(match: re.Match[str]) -> str:
+        raw = match.group(1) or match.group(2)
+        value = raw[1:-1] if raw[:1] in {"'", '"'} else raw
+
+        if is_forbidden_trailer(value):
+            return ""
+
+        return match.group(0)
+
+    return TRAILER_FLAG.sub(replace, command)
+
+
+def is_forbidden_trailer(value: str) -> bool:
+    return TRAILER.match(value.strip()) is not None
+
+
+def use_message_hook(command: str) -> str:
+    hooks = shlex.quote(str(Path(__file__).resolve().parent / "git"))
+    git_word = re.compile(r"(?:(?<=\s)|^)((?:[\w./-]+/)?git)(?=\s)")
+
+    def replace(match: re.Match[str]) -> str:
+        word = match.group(1)
+        rest = command[match.end() :]
+        head = re.split(r"\s*(?:&&|\|\||;)\s*", rest, maxsplit=1)[0]
+
+        if re.search(r"(^|\s)commit(?=\s|$)", head) is None:
+            return word
+
+        return f"{word} -c core.hooksPath={hooks}"
+
+    return git_word.sub(replace, command)
 
 
 def with_author(command: str, prefix: str) -> str:
