@@ -25,19 +25,16 @@ class CampaignMatchService:
         )
 
     def matches_streams(self, row: CampaignRecord, streams: list[StreamRemote]) -> bool:
-        """True when both stored flows still match. False when a flow is missing or changed."""
-        if len(streams) != 2:
-            return False
-
+        """True when both stored flows are still acceptable. False when one is missing or no longer plain."""
         by_id = {stream.id: stream for stream in streams}
 
-        if set(by_id) != {row.country_stream_id, row.offer_stream_id}:
+        if row.country_stream_id not in by_id or row.offer_stream_id not in by_id:
             return False
 
         country = by_id[row.country_stream_id]
         offer = by_id[row.offer_stream_id]
 
-        return _country_stream_matches(row, country) and _offer_stream_matches(row, offer)
+        return _country_stream_matches(row, country) and _offer_stream_shape(offer)
 
 
 def _active(stream: StreamRemote) -> bool:
@@ -66,19 +63,14 @@ def _country_stream_matches(row: CampaignRecord, stream: StreamRemote) -> bool:
     )
 
 
-def _offer_stream_matches(row: CampaignRecord, stream: StreamRemote) -> bool:
+def _offer_stream_shape(stream: StreamRemote) -> bool:
     if not _active(stream):
         return False
 
     if stream.schema != "landings" or stream.action_type != "http":
         return False
 
-    if len(stream.filters) != 0 or len(stream.offers) != 1:
-        return False
-
-    offer = stream.offers[0]
-
-    return offer.offer_id == row.offer_id and offer.share == 100 and offer.state == "active"
+    return len(stream.filters) == 0
 
 
 def _country_payload(payload: object) -> list[str] | None:

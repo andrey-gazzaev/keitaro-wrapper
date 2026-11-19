@@ -330,6 +330,29 @@ def test_sync_error_tombstones_nothing(http: TestClient, keitaro: FakeKeitaro) -
     assert _row(second_id).deleted_at is None
 
 
+def test_sync_offer_change_and_extra_stream_still_match(http: TestClient, keitaro: FakeKeitaro) -> None:
+    created = _post(http)
+    campaign_id = int(created["id"])
+    posted = keitaro.streams[campaign_id]
+    offer_body = dict(posted[1][1])
+    offer_body["offers"] = [
+        {"offer_id": 7, "share": 50, "state": "active"},
+        {"offer_id": 8, "share": 50, "state": "active"},
+    ]
+    extra = dict(posted[1][1])
+    extra["position"] = 3
+    keitaro.stream_overrides[campaign_id] = [
+        remote_stream(posted[0][0], posted[0][1]),
+        remote_stream(posted[1][0], offer_body),
+        remote_stream(999, extra),
+    ]
+    response = http.post("/campaigns/sync")
+
+    assert response.status_code == 200
+    assert response.json()[0]["deleted"] is False
+    assert _row(campaign_id).deleted_at is None
+
+
 def test_sync_stream_error_is_not_a_mismatch(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http)
     campaign_id = int(created["id"])
