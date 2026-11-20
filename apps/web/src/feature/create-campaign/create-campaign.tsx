@@ -4,7 +4,9 @@ import { useCreateCampaign } from '@/queries';
 import { Button, Field, Modal, Stack } from '@/ui';
 import styles from './create-campaign.module.css';
 
-const NAME_HINT = 'Строка принимается, только если начинается с test_gazzaev_.';
+const campaignPrefix = import.meta.env.VITE_CAMPAIGN_PREFIX;
+
+const NAME_HINT = `Строка принимается, только если начинается с ${campaignPrefix}.`;
 const COUNTRY_HINT = 'Первый поток ловит эту страну и ведёт на Google.';
 const OFFER_HINT = 'Второй поток отдаёт остальных на этот оффер, вес 100%.';
 const DIALOG_DESCRIPTION = 'Название, гео-код и id оффера. Домен, группа и источник проставятся из Keitaro.';
@@ -60,7 +62,7 @@ export const CreateCampaign = memo(function CreateCampaign({ open, onClose }: Cr
   const pending = createCampaign.isPending;
 
   const nameInput = useMemo(
-    () => <input value={name} placeholder="test_gazzaev_au" onChange={onName} />,
+    () => <input value={name} placeholder={`${campaignPrefix}au`} onChange={onName} />,
     [name, onName],
   );
 
