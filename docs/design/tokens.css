@@ -1,0 +1,42 @@
+/*
+  Tokens taken from FinOps.fig (Page 1).
+  Purple surfaces, Inter, 8px controls, 12px cards.
+  --draft is a pale wash of the gold badge (#c9a74d) so an unpublished stream reads yellow.
+*/
+
+:root {
+  --bg: #fdf7ff;
+  --bg-muted: #f8f2fa;
+  --bg-sunken: #f2ecf4;
+  --surface: #ffffff;
+  --ink: #1d1b20;
+  --ink-secondary: #494551;
+  --ink-muted: #7a7582;
+  --placeholder: #6b7280;
+  --line: #cbc4d2;
+  --line-soft: #e6e0e9;
+  --primary: #4f378a;
+  --primary-strong: #6750a4;
+  --primary-soft: #e9ddff;
+  --primary-wash: #e1d4fd;
+  --on-primary: #ffffff;
+  --draft: #fff4d6;
+  --draft-ink: #503d00;
+  --draft-line: #c9a74d;
+  --nav-current: #ece6ee;
+  --removed: #ece6ee;
+  --removed-ink: #7a7582;
+  --success: #047857;
+  --success-bg: #d1fae5;
+  --danger: #93000a;
+  --danger-bg: #ffdad6;
+  --danger-solid: #ba1a1a;
+  --shadow: 0 24px 48px rgba(29, 27, 32, 0.18);
+  --font: "Inter", "Segoe UI", sans-serif;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+  --sidebar: 280px;
+  --topbar: 72px;
+  --space: 8px;
+}

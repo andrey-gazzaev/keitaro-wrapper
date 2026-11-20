@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Keitaro — макет</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./design.css" />
+  </head>
+  <body>
+    <div class="studio">
+      <nav class="studio-nav">
+        <h1>Макет</h1>
+        <p>Обёртка над Keitaro. Палитра, поля, кнопки и таблица из FinOps.</p>
+        <button type="button" class="is-on" data-screen="campaigns">Кампании</button>
+        <button type="button" data-screen="create">Новая кампания</button>
+        <button type="button" data-screen="editor">Потоки</button>
+        <button type="button" data-screen="kit">Компоненты</button>
+      </nav>
+
+      <main class="canvas">
+        <section class="screen is-on" id="campaigns">
+          <div class="device">
+            <div class="app">
+              <aside class="side">
+                <div class="brand">
+                  <span class="mark">K</span>
+                  <div>
+                    <strong>Keitaro</strong>
+                    <small>Обёртка над трекером</small>
+                  </div>
+                </div>
+                <a class="nav-link is-current" href="#campaigns">Кампании</a>
+              </aside>
+
+              <div class="main">
+                <header class="top">
+                  <div class="crumbs"><b>Кампании</b></div>
+                  <label class="search">
+                    <span aria-hidden="true">⌕</span>
+                    <input type="search" placeholder="Название или id" />
+                  </label>
+                  <span class="health"><i></i>API готов</span>
+                </header>
+
+                <div class="content">
+                  <div class="page-head">
+                    <div>
+                      <h2>Кампании</h2>
+                      <p>Черновик живёт здесь. В Keitaro состав уходит только по Push.</p>
+                    </div>
+                    <div class="actions">
+                      <button type="button" class="btn btn-secondary">Синхронизировать</button>
+                      <button type="button" class="btn btn-primary">Создать кампанию</button>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Кампания</th>
+                          <th>Id</th>
+                          <th>Потоки</th>
+                          <th>Состояние</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <div class="name">
+                              test_gazzaev_au
+                              <small>Страна AU и оффер на остальных</small>
+                            </div>
+                          </td>
+                          <td class="num">41</td>
+                          <td>2</td>
+                          <td><span class="chip chip-draft">Есть черновик</span></td>
+                          <td><a class="link" href="#editor">Открыть</a></td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <div class="name">
+                              test_gazzaev_de
+                              <small>Опубликована, локальных правок нет</small>
+                            </div>
+                          </td>
+                          <td class="num">18</td>
+                          <td>2</td>
+                          <td><span class="chip chip-ok">Опубликована</span></td>
+                          <td><a class="link" href="#editor">Открыть</a></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="create">
+          <div class="device backdrop">
+            <div class="app">
+              <aside class="side">
+                <div class="brand">
+                  <span class="mark">K</span>
+                  <div>
+                    <strong>Keitaro</strong>
+                    <small>Обёртка над трекером</small>
+                  </div>
+                </div>
+                <a class="nav-link is-current" href="#campaigns">Кампании</a>
+              </aside>
+
+              <div class="main">
+                <header class="top">
+                  <div class="crumbs"><b>Кампании</b></div>
+                  <label class="search">
+                    <span aria-hidden="true">⌕</span>
+                    <input type="search" placeholder="Название или id" disabled />
+                  </label>
+                  <span class="health"><i></i>API готов</span>
+                </header>
+
+                <div class="content">
+                  <div class="page-head">
+                    <div>
+                      <h2>Кампании</h2>
+                      <p>Черновик живёт здесь. В Keitaro состав уходит только по Push.</p>
+                    </div>
+                    <div class="actions">
+                      <button type="button" class="btn btn-secondary" disabled>Синхронизировать</button>
+                      <button type="button" class="btn btn-primary" disabled>Создать кампанию</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-layer">
+              <form class="modal" onsubmit="return false">
+                <h3>Новая кампания</h3>
+                <p>Название, гео-код и id оффера. Домен, группа и источник проставятся из Keitaro.</p>
+
+                <div class="form">
+                  <label class="field">
+                    <span>Название</span>
+                    <input class="control" placeholder="test_gazzaev_au" value="test_gazzaev_au" />
+                    <p class="hint">Строка принимается, только если начинается с test_gazzaev_.</p>
+                  </label>
+
+                  <label class="field">
+                    <span>Гео-код</span>
+                    <input class="control" placeholder="AU" value="AU" />
+                    <p class="hint">Первый поток ловит эту страну и ведёт на Google.</p>
+                  </label>
+
+                  <label class="field">
+                    <span>Id оффера</span>
+                    <input class="control" inputmode="numeric" placeholder="104" value="104" />
+                    <p class="hint">Второй поток отдаёт остальных на этот оффер, вес 100%.</p>
+                  </label>
+
+                  <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="editor">
+          <div class="device">
+            <div class="app">
+              <aside class="side">
+                <div class="brand">
+                  <span class="mark">K</span>
+                  <div>
+                    <strong>Keitaro</strong>
+                    <small>Обёртка над трекером</small>
+                  </div>
+                </div>
+                <a class="nav-link is-current" href="#campaigns">Кампании</a>
+              </aside>
+
+              <div class="main">
+                <header class="top">
+                  <div class="crumbs">Кампании <span>/</span> <b>test_gazzaev_au</b></div>
+                  <label class="search">
+                    <span aria-hidden="true">⌕</span>
+                    <input type="search" placeholder="Название или id" />
+                  </label>
+                  <span class="health"><i></i>API готов</span>
+                </header>
+
+                <div class="content">
+                  <div class="page-head">
+                    <div>
+                      <h2>test_gazzaev_au</h2>
+                      <p>Белый поток опубликован. Жёлтый — черновик. Серый оффер в архиве, вес 0%.</p>
+                    </div>
+                    <div class="actions">
+                      <button type="button" class="btn btn-secondary">Fetch Streams</button>
+                    </div>
+                  </div>
+
+                  <div class="card">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Flow</th>
+                          <th class="num">Share</th>
+                          <th>Stats</th>
+                          <th>Trends</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>
+                            <div class="name">
+                              AU → Google
+                              <small>Поток без офферов. Редирект и фильтр остаются в Keitaro.</small>
+                            </div>
+                          </td>
+                          <td></td>
+                          <td class="muted-row">—</td>
+                          <td class="muted-row">—</td>
+                          <td></td>
+                        </tr>
+                        <tr class="row-draft">
+                          <td>
+                            <div class="name">
+                              Остальные
+                              <small>Поток с офферами. Есть правки, которые ещё не ушли в трекер.</small>
+                            </div>
+                          </td>
+                          <td></td>
+                          <td class="muted-row">—</td>
+                          <td class="muted-row">—</td>
+                          <td>
+                            <div class="actions">
+                              <button type="button" class="btn btn-primary btn-sm">Push to KT</button>
+                              <button type="button" class="btn btn-secondary btn-sm">Cancel</button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr class="row-draft">
+                          <td>
+                            <div class="name">
+                              Alpha
+                              <small>id 101 · запинен</small>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="share">
+                              <input value="40.00" aria-label="Доля Alpha" />
+                              <button type="button" class="btn btn-secondary btn-sm">Pin</button>
+                              <button type="button" class="btn btn-ghost btn-sm">Unpin</button>
+                            </div>
+                          </td>
+                          <td class="muted-row">—</td>
+                          <td class="muted-row">—</td>
+                          <td><button type="button" class="btn btn-danger btn-sm">Remove</button></td>
+                        </tr>
+                        <tr class="row-draft">
+                          <td>
+                            <div class="name">
+                              Beta
+                              <small>id 102</small>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="share">
+                              <input value="20.00" aria-label="Доля Beta" />
+                              <button type="button" class="btn btn-secondary btn-sm">Pin</button>
+                            </div>
+                          </td>
+                          <td class="muted-row">—</td>
+                          <td class="muted-row">—</td>
+                          <td><button type="button" class="btn btn-danger btn-sm">Remove</button></td>
+                        </tr>
+                        <tr class="row-draft">
+                          <td>
+                            <div class="name">
+                              Gamma
+                              <small>id 103</small>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="share">
+                              <input value="20.00" aria-label="Доля Gamma" />
+                              <button type="button" class="btn btn-secondary btn-sm">Pin</button>
+                            </div>
+                          </td>
+                          <td class="muted-row">—</td>
+                          <td class="muted-row">—</td>
+                          <td><button type="button" class="btn btn-danger btn-sm">Remove</button></td>
+                        </tr>
+                        <tr class="row-draft">
+                          <td>
+                            <div class="name">
+                              Epsilon
+                              <small>id 105 · добавлен в обёртке</small>
+                            </div>
+                          </td>
+                          <td>
+                            <div class="share">
+                              <input value="20.00" aria-label="Доля Epsilon" />
+                              <button type="button" class="btn btn-secondary btn-sm">Pin</button>
+                            </div>
+                          </td>
+                          <td class="muted-row">—</td>
+                          <td class="muted-row">—</td>
+                          <td><button type="button" class="btn btn-danger btn-sm">Remove</button></td>
+                        </tr>
+                        <tr class="row-removed">
+                          <td>
+                            <div class="name">
+                              Delta
+                              <small>id 104 · removed</small>
+                            </div>
+                          </td>
+                          <td class="num">0.00</td>
+                          <td class="muted-row">—</td>
+                          <td class="muted-row">—</td>
+                          <td><button type="button" class="btn btn-ghost btn-sm">Bring back</button></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <form class="panel" onsubmit="return false">
+                    <strong>Добавить оффер</strong>
+                    <div class="form-row">
+                      <label class="field">
+                        <span>Поток</span>
+                        <select class="control">
+                          <option>Остальные</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Id оффера</span>
+                        <input class="control" inputmode="numeric" placeholder="106" />
+                      </label>
+                      <button type="button" class="btn btn-primary">Add</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen" id="kit">
+          <div class="device-kit">
+            <div class="kit">
+              <div>
+                <h2>Тема</h2>
+                <div class="swatches">
+                  <div class="swatch"><i style="background: #fdf7ff"></i><b>Фон</b><span>#fdf7ff</span></div>
+                  <div class="swatch"><i style="background: #ffffff"></i><b>Карточка</b><span>#ffffff</span></div>
+                  <div class="swatch"><i style="background: #1d1b20"></i><b>Текст</b><span>#1d1b20</span></div>
+                  <div class="swatch"><i style="background: #4f378a"></i><b>Кнопка</b><span>#4f378a</span></div>
+                  <div class="swatch"><i style="background: #6750a4"></i><b>Акцент</b><span>#6750a4</span></div>
+                  <div class="swatch"><i style="background: #e1d4fd"></i><b>Заливка</b><span>#e1d4fd</span></div>
+                  <div class="swatch"><i style="background: #c9a74d"></i><b>Черновик</b><span>#c9a74d</span></div>
+                  <div class="swatch"><i style="background: #fff4d6"></i><b>Жёлтый ряд</b><span>#fff4d6</span></div>
+                  <div class="swatch"><i style="background: #ece6ee"></i><b>Архив</b><span>#ece6ee</span></div>
+                  <div class="swatch"><i style="background: #047857"></i><b>Успех</b><span>#047857</span></div>
+                  <div class="swatch"><i style="background: #ba1a1a"></i><b>Ошибка</b><span>#ba1a1a</span></div>
+                  <div class="swatch"><i style="background: #cbc4d2"></i><b>Линия</b><span>#cbc4d2</span></div>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div>
+                  <h2>Кнопки</h2>
+                  <div class="panel">
+                    <div class="row">
+                      <button type="button" class="btn btn-primary">Создать</button>
+                      <button type="button" class="btn btn-secondary">Синхронизировать</button>
+                      <button type="button" class="btn btn-ghost">Bring back</button>
+                      <button type="button" class="btn btn-danger">Remove</button>
+                    </div>
+                    <div class="row">
+                      <button type="button" class="btn btn-primary btn-sm">Push to KT</button>
+                      <button type="button" class="btn btn-secondary btn-sm">Cancel</button>
+                      <button type="button" class="btn btn-primary" disabled>Создать</button>
+                    </div>
+                    <div class="row">
+                      <span class="chip">Поток</span>
+                      <span class="chip chip-draft">Есть черновик</span>
+                      <span class="chip chip-ok">Опубликована</span>
+                      <span class="chip chip-danger">removed</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h2>Поля</h2>
+                  <div class="panel">
+                    <label class="field">
+                      <span>Название</span>
+                      <input class="control" placeholder="test_gazzaev_" />
+                      <p class="hint">Обязательное поле.</p>
+                    </label>
+                    <label class="field">
+                      <span>Гео-код</span>
+                      <input class="control is-error" value="??" />
+                      <p class="hint is-error">Проверьте название, страну и id оффера.</p>
+                    </label>
+                    <label class="field">
+                      <span>Поток</span>
+                      <select class="control">
+                        <option>Остальные</option>
+                        <option>AU → Google</option>
+                      </select>
+                    </label>
+                    <label class="field">
+                      <span>Id оффера</span>
+                      <input class="control" value="104" disabled />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h2>Таблица</h2>
+                <div class="card">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Flow</th>
+                        <th class="num">Share</th>
+                        <th>Состояние</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>AU → Google</td>
+                        <td></td>
+                        <td><span class="chip chip-ok">Опубликован</span></td>
+                      </tr>
+                      <tr class="row-draft">
+                        <td>Остальные</td>
+                        <td class="num">100.00</td>
+                        <td><span class="chip chip-draft">Черновик</span></td>
+                      </tr>
+                      <tr class="row-removed">
+                        <td>Delta</td>
+                        <td class="num">0.00</td>
+                        <td><span class="chip">removed</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const buttons = document.querySelectorAll(".studio-nav button");
+      const screens = document.querySelectorAll(".screen");
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const id = button.dataset.screen;
+
+          buttons.forEach((item) => item.classList.toggle("is-on", item === button));
+          screens.forEach((screen) => screen.classList.toggle("is-on", screen.id === id));
+        });
+      });
+    </script>
+  </body>
+</html>
