@@ -19,12 +19,8 @@
   width: 220px;
 }
 
-.found {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: var(--radius-control);
-  background: var(--success-bg);
-  color: var(--success);
-  font-size: 13px;
-  font-weight: 600;
+.offer {
+  flex: 1 1 280px;
+  width: 280px;
+  max-width: 100%;
 }

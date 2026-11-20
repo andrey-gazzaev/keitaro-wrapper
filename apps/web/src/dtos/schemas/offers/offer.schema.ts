@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-/** Offer body the editor can show. */
+/** Parsed offer body. */
 export type OfferDto = {
   /** Keitaro offer id. */
   readonly id: number;
 
-  /** Offer name. Empty when Keitaro sends no name. */
+  /** Offer name. Empty when the offer has no name. */
   readonly name: string;
 };
 

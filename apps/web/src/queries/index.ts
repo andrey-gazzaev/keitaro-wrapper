@@ -8,9 +8,9 @@ export { useBringBackStream } from './editor/use-bring-back-stream/use-bring-bac
 export { useCancelStream } from './editor/use-cancel-stream/use-cancel-stream';
 export { useFetchStreams } from './editor/use-fetch-streams/use-fetch-streams';
 export { useLoadEditor } from './editor/use-load-editor/use-load-editor';
-export { useLookupOffer } from './editor/use-lookup-offer/use-lookup-offer';
 export { usePinOffer } from './editor/use-pin-offer/use-pin-offer';
 export { usePushStream } from './editor/use-push-stream/use-push-stream';
 export { useRemoveOffer } from './editor/use-remove-offer/use-remove-offer';
 export { useUnpinOffer } from './editor/use-unpin-offer/use-unpin-offer';
+export { useSearchOffers } from './offers/use-search-offers/use-search-offers';
 export { useHealth } from './health/use-health/use-health';

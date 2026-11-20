@@ -39,7 +39,7 @@ export const CampaignEditor = memo(function CampaignEditor({ campaignId }: Campa
         onCancel={editor.cancel}
       />
 
-      <StreamAdd targets={editor.targets} adding={editor.adding} onLookup={editor.lookup} onAdd={editor.add} />
+      <StreamAdd targets={editor.targets} adding={editor.adding} onAdd={editor.add} />
 
       {editor.actionFailed ? <p className="status">Не удалось сохранить правку.</p> : null}
     </>

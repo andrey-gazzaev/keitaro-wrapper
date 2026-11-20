@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { mapCampaignEditor } from '@/mappers';
 import {
   useAddOffer,
@@ -7,7 +7,6 @@ import {
   useCancelStream,
   useFetchStreams,
   useLoadEditor,
-  useLookupOffer,
   usePinOffer,
   usePushStream,
   useRemoveOffer,
@@ -42,7 +41,6 @@ export type StreamActionPending = {
 export function useCampaignEditor(campaignId: number) {
   const editor = useLoadEditor(campaignId);
   const fetchStreamsMutation = useFetchStreams(campaignId);
-  const offerLookup = useLookupOffer(campaignId);
   const addOffer = useAddOffer(campaignId);
   const removeOffer = useRemoveOffer(campaignId);
   const bringBackOffer = useBringBackOffer(campaignId);
@@ -51,7 +49,6 @@ export function useCampaignEditor(campaignId: number) {
   const unpinOffer = useUnpinOffer(campaignId);
   const pushStream = usePushStream(campaignId);
   const cancelStream = useCancelStream(campaignId);
-  const [lookupPending, setLookupPending] = useState(false);
 
   const view = useMemo(() => mapCampaignEditor(editor.data), [editor.data]);
 
@@ -86,21 +83,6 @@ export function useCampaignEditor(campaignId: number) {
   const fetchStreams = useCallback(() => {
     fetchStreamsMutation.mutate();
   }, [fetchStreamsMutation.mutate]);
-
-  const lookup = useCallback(
-    async (offerId: number) => {
-      setLookupPending(true);
-
-      try {
-        const offer = await offerLookup.lookup(offerId);
-
-        return offer.name;
-      } finally {
-        setLookupPending(false);
-      }
-    },
-    [offerLookup.lookup],
-  );
 
   const add = useCallback(
     (streamId: number, offerId: number) => {
@@ -164,7 +146,7 @@ export function useCampaignEditor(campaignId: number) {
     rows: view.table.rows,
     targets: view.targets,
     fetching: fetchStreamsMutation.isPending,
-    adding: lookupPending || addOffer.isPending,
+    adding: addOffer.isPending,
     pending,
     actionFailed:
       addOffer.isError ||
@@ -176,7 +158,6 @@ export function useCampaignEditor(campaignId: number) {
       pushStream.isError ||
       cancelStream.isError,
     fetchStreams,
-    lookup,
     add,
     remove,
     bringBack,

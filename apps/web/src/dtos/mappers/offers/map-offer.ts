@@ -1,5 +1,5 @@
 import type { Offer } from '@/models';
-import type { OfferDto } from '../../schemas/editor/offer.schema';
+import type { OfferDto } from '../../schemas/offers/offer.schema';
 
 /** Offer from an offer JSON body. */
 export function mapOffer(dto: OfferDto): Offer {

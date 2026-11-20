@@ -1,5 +1,5 @@
-/** Message for a failed offer lookup. */
+/** Message for a failed offer search. */
 export type OfferFieldErrorVm = {
-  /** Message under the offer id. Empty when the lookup has not failed. */
+  /** Message under the offer field. Empty when the search has not failed. */
   readonly offerId: string;
 };

@@ -4,7 +4,7 @@ export { CampaignCreateError } from './campaign-create-error';
 export type { CampaignDraft } from './campaign-draft';
 export type { Health } from './health';
 export type { Offer } from './offer';
-export { OfferLookupError } from './offer-lookup-error';
+export { OfferSearchError } from './offer-search-error';
 export type { StreamEditor } from './stream-editor';
 export type { StreamGroup } from './stream-group';
 export type { StreamLine } from './stream-line';
