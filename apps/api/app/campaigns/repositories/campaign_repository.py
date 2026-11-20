@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy import select
+from sqlalchemy import String, cast, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.campaigns.repositories.campaign_record import CampaignRecord
@@ -31,6 +31,29 @@ class CampaignRepository:
     def list_live(self) -> list[CampaignRecord]:
         """Stored campaigns that are still live. Empty when none are live."""
         rows = self._session.scalars(select(CampaignRecord).where(CampaignRecord.deleted_at.is_(None)))
+
+        return _detach_all(self._session, list(rows))
+
+    def count_matching(self, needle: str) -> tuple[int, int]:
+        """Matched campaigns and stored campaigns. Both are zero when nothing is stored."""
+        stored = self._count()
+
+        if needle == "":
+            return stored, stored
+
+        return self._count(needle), stored
+
+    def list_matching(self, needle: str, offset: int, limit: int) -> list[CampaignRecord]:
+        """Matching campaigns in this slice, newest first. Empty when none fall in the slice."""
+        statement = select(CampaignRecord).order_by(
+            CampaignRecord.created_at.desc(),
+            CampaignRecord.keitaro_id.desc(),
+        )
+
+        if needle != "":
+            statement = statement.where(_matches(needle))
+
+        rows = self._session.scalars(statement.offset(offset).limit(limit))
 
         return _detach_all(self._session, list(rows))
 
@@ -84,6 +107,16 @@ class CampaignRepository:
 
         self._session.flush()
 
+    def _count(self, needle: str | None = None) -> int:
+        statement = select(func.count()).select_from(CampaignRecord)
+
+        if needle is not None:
+            statement = statement.where(_matches(needle))
+
+        found = self._session.scalar(statement)
+
+        return 0 if found is None else found
+
 
 def get_campaign_repository(session: SessionDep) -> CampaignRepository:
     """Campaign repository for one request."""
@@ -105,3 +138,16 @@ def _detach_all(session: Session, rows: list[CampaignRecord]) -> list[CampaignRe
         session.expunge(row)
 
     return rows
+
+
+def _matches(needle: str):
+    return or_(
+        func.lower(CampaignRecord.name).like(_pattern(needle.lower()), escape="\\"),
+        cast(CampaignRecord.keitaro_id, String).like(_pattern(needle), escape="\\"),
+    )
+
+
+def _pattern(needle: str) -> str:
+    escaped = needle.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+    return f"%{escaped}%"
