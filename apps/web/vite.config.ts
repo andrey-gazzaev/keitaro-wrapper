@@ -23,6 +23,7 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         '/health': 'http://127.0.0.1:8000',
+        '/offers': 'http://127.0.0.1:8000',
         '/campaigns': {
           target: 'http://127.0.0.1:8000',
           bypass(req) {

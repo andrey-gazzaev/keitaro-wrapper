@@ -31,7 +31,7 @@ Postgres, API и страница в Docker:
 pnpm start
 ```
 
-Страница открывается на [http://127.0.0.1:8080](http://127.0.0.1:8080). Nginx отдаёт сборку и проксирует `/health` и API `/campaigns` в контейнер API. Адрес базы внутри сети, URL проверок, `CORS_ORIGINS` и `CAMPAIGN_PREFIX` берутся из `.env` и `.env.docker`. Остановка — `pnpm db:down`.
+Страница открывается на [http://127.0.0.1:8080](http://127.0.0.1:8080). Nginx отдаёт сборку и проксирует `/health`, `/offers` и API `/campaigns` в контейнер API. Адрес базы внутри сети, URL проверок, `CORS_ORIGINS` и `CAMPAIGN_PREFIX` берутся из `.env` и `.env.docker`. Остановка — `pnpm db:down`.
 
 ## База
 
