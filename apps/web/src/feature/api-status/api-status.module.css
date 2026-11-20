@@ -1,0 +1,31 @@
+.pill {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ready {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.down {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.loading {
+  background: var(--bg-sunken);
+  color: var(--ink-muted);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+}
