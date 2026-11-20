@@ -1,4 +1,4 @@
-import { type FormEvent, type ReactNode } from 'react';
+import { memo, type FormEvent, type ReactNode } from 'react';
 import styles from './stack.module.css';
 
 type StackProps = {
@@ -16,7 +16,7 @@ type StackProps = {
 };
 
 /** Vertical stack with the theme gap. */
-export function Stack({ as = 'div', variant = 'stretch', children, onSubmit }: StackProps) {
+export const Stack = memo(function Stack({ as = 'div', variant = 'stretch', children, onSubmit }: StackProps) {
   const className = variant === 'start' ? `${styles.stack} ${styles.start}` : styles.stack;
 
   if (as === 'form') {
@@ -32,4 +32,4 @@ export function Stack({ as = 'div', variant = 'stretch', children, onSubmit }: S
   }
 
   return <div className={className}>{children}</div>;
-}
+});

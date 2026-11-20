@@ -1,0 +1,87 @@
+.field,
+.invalid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.field span,
+.invalid span {
+  color: var(--ink-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.field input,
+.field select,
+.invalid input,
+.invalid select {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background-color: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  outline: none;
+}
+
+.field input::placeholder,
+.invalid input::placeholder {
+  color: var(--placeholder);
+}
+
+.field input:focus,
+.field select:focus,
+.invalid input:focus,
+.invalid select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 55, 138, 0.18);
+}
+
+.field input:disabled,
+.field select:disabled,
+.invalid input:disabled,
+.invalid select:disabled {
+  background-color: var(--bg-muted);
+  color: var(--placeholder);
+}
+
+.field select,
+.invalid select {
+  appearance: none;
+  padding-right: 32px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ink-secondary) 50%),
+    linear-gradient(135deg, var(--ink-secondary) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 18px,
+    calc(100% - 12px) 18px;
+  background-size:
+    6px 6px,
+    6px 6px;
+  background-repeat: no-repeat;
+}
+
+.invalid input,
+.invalid select {
+  border-color: var(--danger-solid);
+  background-color: var(--danger-wash);
+}
+
+.hint,
+.error {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.hint {
+  color: var(--ink-muted);
+}
+
+.error {
+  color: var(--danger);
+}

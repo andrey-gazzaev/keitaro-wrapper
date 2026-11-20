@@ -1,11 +1,46 @@
+/*
+  Palette from FinOps.fig. Same values as docs/design/tokens.css.
+  --fg, --muted, --font, --sans, and --space stay the names the screens already use.
+*/
+
 :root {
   color-scheme: light;
-  --bg: #f4f1ea;
-  --fg: #1c1915;
-  --muted: #6b645c;
-  --line: #e4ddd2;
-  --font: "Iowan Old Style", Palatino, "Palatino Linotype", serif;
-  --sans: "Avenir Next", "Segoe UI", sans-serif;
+  --bg: #fdf7ff;
+  --bg-muted: #f8f2fa;
+  --bg-sunken: #f2ecf4;
+  --surface: #ffffff;
+  --ink: #1d1b20;
+  --ink-secondary: #494551;
+  --ink-muted: #7a7582;
+  --placeholder: #6b7280;
+  --line: #cbc4d2;
+  --line-soft: #e6e0e9;
+  --primary: #4f378a;
+  --primary-strong: #6750a4;
+  --primary-soft: #e9ddff;
+  --primary-wash: #e1d4fd;
+  --on-primary: #ffffff;
+  --draft: #fff4d6;
+  --draft-ink: #503d00;
+  --draft-line: #c9a74d;
+  --nav-current: #ece6ee;
+  --removed: #ece6ee;
+  --removed-ink: #7a7582;
+  --success: #047857;
+  --success-bg: #d1fae5;
+  --danger: #93000a;
+  --danger-bg: #ffdad6;
+  --danger-solid: #ba1a1a;
+  --primary-hover: #452f7d;
+  --danger-wash: #fff8f7;
+  --shadow: 0 24px 48px rgba(29, 27, 32, 0.18);
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+  --fg: var(--ink);
+  --muted: var(--ink-muted);
+  --font: "Inter", "Segoe UI", sans-serif;
+  --sans: "Inter", "Segoe UI", sans-serif;
   --space: 1rem;
 }
 
@@ -14,15 +49,8 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--sans);
-  line-height: 1.5;
-}
-
-h1 {
-  margin: 0;
-  font-family: var(--font);
-  font-size: 2.75rem;
-  font-weight: 500;
-  letter-spacing: -0.03em;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .muted {

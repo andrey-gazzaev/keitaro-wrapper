@@ -1,0 +1,8 @@
+.draft {
+  background: var(--draft);
+}
+
+.removed {
+  background: var(--removed);
+  color: var(--removed-ink);
+}
