@@ -1,4 +1,5 @@
 export type { Campaign } from './campaign';
+export type { CampaignBoard } from './campaign-board';
 export { CampaignCreateError } from './campaign-create-error';
 export type { CampaignDraft } from './campaign-draft';
 export type { Health } from './health';

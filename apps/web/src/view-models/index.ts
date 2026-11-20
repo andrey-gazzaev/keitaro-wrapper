@@ -1,4 +1,5 @@
 export type { ApiStatusVm } from './api-status-vm';
+export type { CampaignBoardVm } from './campaign-board-vm';
 export type { CampaignEditorVm } from './campaign-editor-vm';
 export type { CampaignFormErrorVm } from './campaign-form-error-vm';
 export type { CampaignRowVm } from './campaign-row-vm';

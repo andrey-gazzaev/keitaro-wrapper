@@ -10,6 +10,7 @@ export function useSyncCampaigns() {
     mutationFn: () => campaignApi.sync(),
     onSuccess: (campaigns) => {
       client.setQueryData(campaignKeys.list(), campaigns);
+      void client.invalidateQueries({ queryKey: campaignKeys.board() });
     },
   });
 }

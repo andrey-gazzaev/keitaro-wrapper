@@ -1,8 +1,10 @@
-import type { Campaign, CampaignDraft } from '@/models';
+import type { Campaign, CampaignBoard, CampaignDraft } from '@/models';
 import { readHttpFailure } from '../../http-failure';
 import { api } from '../../http';
+import { mapCampaignBoard } from '../../mappers/campaign/map-campaign-board';
 import { mapCampaignCreateError } from '../../mappers/campaign/map-campaign-create-error';
 import { mapCampaign, mapCampaignDraftDto } from '../../mappers/campaign/map-campaign';
+import { campaignBoardSchema } from '../../schemas/campaign/campaign-board.schema';
 import { campaignListSchema } from '../../schemas/campaign/campaign-list.schema';
 import { campaignSchema } from '../../schemas/campaign/campaign.schema';
 
@@ -30,6 +32,13 @@ export class CampaignApi {
     const { data } = await api.get('/campaigns');
 
     return campaignListSchema.parse(data).map(mapCampaign);
+  }
+
+  /** One page of stored campaigns for this search, newest first. */
+  public async board(needle: string, page: number): Promise<CampaignBoard> {
+    const { data } = await api.get('/campaigns/board', { params: { q: needle, page } });
+
+    return mapCampaignBoard(campaignBoardSchema.parse(data));
   }
 
   /** Sync with Keitaro and return every stored campaign, newest first. */

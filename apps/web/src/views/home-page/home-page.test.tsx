@@ -9,6 +9,7 @@ const campaignApiMock = vi.hoisted(() => ({
   list: vi.fn(),
   create: vi.fn(),
   sync: vi.fn(),
+  board: vi.fn(),
 }));
 
 vi.mock('@/dtos/api/health/health.api', () => ({
@@ -44,7 +45,9 @@ describe('HomePage', () => {
     campaignApiMock.list.mockReset();
     campaignApiMock.create.mockReset();
     campaignApiMock.sync.mockReset();
+    campaignApiMock.board.mockReset();
     campaignApiMock.list.mockResolvedValue([]);
+    campaignApiMock.board.mockResolvedValue({ campaigns: [], page: 0, pageCount: 0, state: 'empty' });
   });
 
   it('shows that the API is ready', async () => {
@@ -94,6 +97,12 @@ describe('HomePage', () => {
     const user = userEvent.setup();
 
     campaignApiMock.list.mockResolvedValue([{ id: 4, name: 'Spring', deleted: false }]);
+    campaignApiMock.board.mockResolvedValue({
+      campaigns: [{ id: 4, name: 'Spring', deleted: false }],
+      page: 0,
+      pageCount: 1,
+      state: 'ready',
+    });
     campaignApiMock.sync.mockRejectedValue(new Error('down'));
     renderPage();
 

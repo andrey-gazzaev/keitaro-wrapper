@@ -9,6 +9,7 @@ const campaignApiMock = vi.hoisted(() => ({
   list: vi.fn(),
   create: vi.fn(),
   sync: vi.fn(),
+  board: vi.fn(),
 }));
 
 vi.mock('@/dtos/api/health/health.api', () => ({
@@ -47,7 +48,14 @@ describe('routes', () => {
 
   beforeEach(() => {
     campaignApiMock.list.mockReset();
+    campaignApiMock.board.mockReset();
     campaignApiMock.list.mockResolvedValue([{ id: 4, name: 'Spring', deleted: false }]);
+    campaignApiMock.board.mockResolvedValue({
+      campaigns: [{ id: 4, name: 'Spring', deleted: false }],
+      page: 0,
+      pageCount: 1,
+      state: 'ready',
+    });
   });
 
   it('opens a campaign in the editor without a document load', async () => {

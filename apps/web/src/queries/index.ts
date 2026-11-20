@@ -1,3 +1,4 @@
+export { useCampaignBoard } from './campaigns/use-campaign-board/use-campaign-board';
 export { useCampaigns } from './campaigns/use-campaigns/use-campaigns';
 export { useCreateCampaign } from './campaigns/use-create-campaign/use-create-campaign';
 export { useSyncCampaigns } from './campaigns/use-sync-campaigns/use-sync-campaigns';
