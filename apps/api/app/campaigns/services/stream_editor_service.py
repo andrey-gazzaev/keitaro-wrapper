@@ -1,7 +1,7 @@
 """Edit offer shares for one stored campaign."""
 
 from datetime import UTC, datetime
-from decimal import ROUND_HALF_UP, Decimal
+from decimal import Decimal
 
 from app.campaigns.models.offer import Offer
 from app.campaigns.models.offer_remote import OfferRemote
@@ -18,10 +18,8 @@ from app.campaigns.repositories.stream_record import StreamRecord
 from app.campaigns.repositories.stream_repository import StreamRepository, StreamRepositoryDep
 from app.campaigns.services.keitaro_error import KeitaroError
 from app.campaigns.services.keitaro_service import KeitaroDep, KeitaroService
+from app.campaigns.services.offer_share_service import OfferShareService
 from app.campaigns.services.stream_editor_error import StreamEditorError
-
-_HUNDRED = Decimal("100")
-_CENT = Decimal("0.01")
 
 
 class StreamEditorService:
@@ -41,6 +39,7 @@ class StreamEditorService:
         self._offers = offers
         self._bindings = bindings
         self._keitaro = keitaro
+        self._shares = OfferShareService()
 
     def get(self, campaign_id: int) -> StreamEditor:
         """Editor state for this campaign. Streams are empty before the first fetch."""
@@ -136,7 +135,7 @@ class StreamEditorService:
         self._bindings.insert(
             stream_keitaro_id=stream_id,
             offer_keitaro_id=offer.id,
-            share=_money(0),
+            share=self._shares.money(0),
             pinned=False,
             deleted=False,
             published_share=None,
@@ -155,7 +154,7 @@ class StreamEditorService:
         if binding.deleted:
             raise StreamEditorError("conflict")
 
-        self._bindings.set_working(binding.id, share=_money(0), pinned=False, deleted=True)
+        self._bindings.set_working(binding.id, share=self._shares.money(0), pinned=False, deleted=True)
         self._split(stream.keitaro_id)
 
         return self._editor(campaign_id)
@@ -167,7 +166,7 @@ class StreamEditorService:
         if stream.deleted or not binding.deleted:
             raise StreamEditorError("conflict")
 
-        self._bindings.set_working(binding.id, share=_money(0), pinned=False, deleted=False)
+        self._bindings.set_working(binding.id, share=self._shares.money(0), pinned=False, deleted=False)
         self._split(stream.keitaro_id)
 
         return self._editor(campaign_id)
@@ -179,7 +178,7 @@ class StreamEditorService:
         if stream.deleted or binding.deleted:
             raise StreamEditorError("conflict")
 
-        self._bindings.set_working(binding.id, share=_money(share), pinned=True, deleted=binding.deleted)
+        self._bindings.set_working(binding.id, share=self._shares.money(share), pinned=True, deleted=binding.deleted)
         self._split(stream.keitaro_id)
 
         return self._editor(campaign_id)
@@ -193,7 +192,7 @@ class StreamEditorService:
 
         self._bindings.set_working(
             binding.id,
-            share=_money(_decimal(binding.share)),
+            share=self._shares.money(binding.share),
             pinned=False,
             deleted=binding.deleted,
         )
@@ -211,7 +210,7 @@ class StreamEditorService:
         body = self._keitaro.get_stream(stream_id)
         bindings = self._bindings.list_for_stream(stream_id)
         body["offers"] = [
-            {"offer_id": row.offer_keitaro_id, "share": _json_share(row.share), "state": "active"}
+            {"offer_id": row.offer_keitaro_id, "share": self._shares.json_share(row.share), "state": "active"}
             for row in bindings
             if not row.deleted
         ]
@@ -220,7 +219,7 @@ class StreamEditorService:
         for row in bindings:
             self._bindings.set_published(
                 row.id,
-                share=_money(_decimal(row.share)),
+                share=self._shares.money(row.share),
                 pinned=row.pinned,
                 deleted=row.deleted,
             )
@@ -238,13 +237,15 @@ class StreamEditorService:
         stream = self._require_stream(campaign_id, stream_id)
 
         for row in self._bindings.list_for_stream(stream_id):
-            if row.published_share is None:
+            published_share = row.published_share
+
+            if published_share is None:
                 self._bindings.delete(row.id)
                 continue
 
             self._bindings.set_working(
                 row.id,
-                share=_money(_decimal(row.published_share)),
+                share=self._shares.money(published_share),
                 pinned=bool(row.published_pinned),
                 deleted=bool(row.published_deleted),
             )
@@ -261,12 +262,12 @@ class StreamEditorService:
         seen: set[int] = set()
 
         for remote in offers:
-            offer_id = _offer_id(remote.offer_id)
+            offer_id = self._shares.offer_id(remote.offer_id)
 
             if offer_id in seen:
                 continue
 
-            share = _remote_share(remote.share)
+            share = self._shares.remote_share(remote.share)
             seen.add(offer_id)
 
             if self._bindings.find_pair(stream.keitaro_id, offer_id) is not None:
@@ -302,8 +303,8 @@ class StreamEditorService:
         self._streams.set_deleted_flags(stream.keitaro_id, deleted=True, published_deleted=True)
 
     def _archive_binding(self, row: StreamOfferRecord) -> None:
-        self._bindings.set_working(row.id, share=_money(0), pinned=False, deleted=True)
-        self._bindings.set_published(row.id, share=_money(0), pinned=False, deleted=True)
+        self._bindings.set_working(row.id, share=self._shares.money(0), pinned=False, deleted=True)
+        self._bindings.set_published(row.id, share=self._shares.money(0), pinned=False, deleted=True)
 
     def _insert_stream(self, campaign_id: int, remote: StreamRemote) -> StreamRecord:
         return self._streams.insert(
@@ -330,36 +331,11 @@ class StreamEditorService:
         self._offers.insert(keitaro_id=offer.id, name=offer.name, created_at=datetime.now(UTC))
 
     def _split(self, stream_id: int) -> None:
-        rows = self._bindings.list_for_stream(stream_id)
-        pinned_total = sum(
-            (_decimal(row.share) for row in rows if not row.deleted and row.pinned),
-            Decimal("0"),
-        )
-        remainder = _HUNDRED - pinned_total
+        shares = self._shares.split(self._bindings.list_for_stream(stream_id))
 
-        if remainder < 0:
-            raise StreamEditorError("invalid")
-
-        unpinned = sorted(
-            (row for row in rows if not row.deleted and not row.pinned),
-            key=lambda row: (row.created_at, row.id),
-        )
-
-        if not unpinned:
+        if not shares:
             return
 
-        each = _money(remainder / Decimal(len(unpinned)))
-        last = _money(remainder - each * (len(unpinned) - 1))
-
-        if last < 0:
-            raise StreamEditorError("invalid")
-
-        shares: dict[int, Decimal] = {}
-
-        for row in unpinned[:-1]:
-            shares[row.id] = each
-
-        shares[unpinned[-1].id] = last
         self._bindings.set_shares(shares)
 
     def _editor(self, campaign_id: int) -> StreamEditor:
@@ -374,7 +350,7 @@ class StreamEditorService:
                     position=stream.position,
                     accepts_offers=not stream.deleted and stream.flow_schema == "landings",
                     deleted=stream.deleted,
-                    dirty=_dirty(stream, bindings),
+                    dirty=self._shares.dirty(stream, bindings),
                     lines=[self._line(row) for row in bindings],
                 )
             )
@@ -388,7 +364,7 @@ class StreamEditorService:
             id=row.id,
             offer_id=row.offer_keitaro_id,
             name="" if offer is None else offer.name,
-            share=_money(_decimal(row.share)),
+            share=self._shares.money(row.share),
             pinned=row.pinned,
             deleted=row.deleted,
         )
@@ -427,71 +403,3 @@ def get_stream_editor_service(
 ) -> StreamEditorService:
     """Stream editor for one request."""
     return StreamEditorService(campaigns, streams, offers, bindings, keitaro)
-
-
-def _dirty(stream: StreamRecord, rows: list[StreamOfferRecord]) -> bool:
-    if stream.deleted != stream.published_deleted:
-        return True
-
-    for row in rows:
-        if row.published_share is None or row.published_pinned is None or row.published_deleted is None:
-            return True
-
-        if row.pinned != row.published_pinned or row.deleted != row.published_deleted:
-            return True
-
-        if _money(_decimal(row.share)) != _money(_decimal(row.published_share)):
-            return True
-
-    return False
-
-
-def _offer_id(value: object) -> int:
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise KeitaroError("unavailable")
-
-    return value
-
-
-def _remote_share(value: object) -> Decimal:
-    if isinstance(value, bool):
-        raise KeitaroError("unavailable")
-
-    if isinstance(value, int):
-        share = Decimal(value)
-    elif isinstance(value, float):
-        share = Decimal(str(value))
-    elif isinstance(value, str):
-        try:
-            share = Decimal(value)
-        except ArithmeticError:
-            raise KeitaroError("unavailable") from None
-    else:
-        raise KeitaroError("unavailable")
-
-    share = _money(share)
-
-    if share < 0 or share > _HUNDRED:
-        raise KeitaroError("unavailable")
-
-    return share
-
-
-def _decimal(value: Decimal | int | float | str) -> Decimal:
-    if isinstance(value, Decimal):
-        return value
-
-    return Decimal(str(value))
-
-
-def _money(value: Decimal | int) -> Decimal:
-    return Decimal(value).quantize(_CENT, rounding=ROUND_HALF_UP)
-
-
-def _json_share(value: Decimal | int | float | str) -> int | float:
-    text = format(_money(_decimal(value)), "f")
-
-    if text.endswith(".00"):
-        return int(text[:-3])
-
-    return float(text)
