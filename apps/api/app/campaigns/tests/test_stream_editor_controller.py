@@ -205,6 +205,37 @@ def test_unpin_clears_the_pin_and_splits_again(http: TestClient, keitaro: FakeKe
     ]
 
 
+def test_bring_back_stream_reopens_an_archived_flow(http: TestClient, keitaro: FakeKeitaro) -> None:
+    store_campaign()
+    _flows(keitaro)
+    _ok(http.post("/campaigns/100/editor/fetch"))
+    keitaro.streams[100] = [remote_stream(200, name="Country", position=1, flow_schema="redirect")]
+    archived = _ok(http.post("/campaigns/100/editor/fetch"))
+    line_id = int(_lines(_stream(archived, "Offer"))[0]["id"])
+    brought = _ok(_bring_back_stream(http, 201))
+    reopened = _stream(brought, "Offer")
+
+    assert reopened["deleted"] is False
+    assert reopened["dirty"] is True
+    assert [(line["share"], line["deleted"]) for line in _lines(reopened)] == [
+        ("0.00", True),
+        ("0.00", True),
+        ("0.00", True),
+    ]
+
+    restored = _ok(_bring_back(http, line_id))
+
+    assert _lines(_stream(restored, "Offer"))[0]["deleted"] is False
+    assert _bring_back_stream(http, 201).status_code == status.HTTP_409_CONFLICT
+    assert _bring_back_stream(http, 200).status_code == status.HTTP_409_CONFLICT
+
+    cancelled = _ok(http.post("/campaigns/100/editor/streams/201/cancel"))
+    offer = _stream(cancelled, "Offer")
+
+    assert offer["deleted"] is True
+    assert offer["dirty"] is False
+
+
 def test_bring_back_splits_around_the_pin(http: TestClient, keitaro: FakeKeitaro) -> None:
     store_campaign()
     editor = _three(http, keitaro)
@@ -373,6 +404,37 @@ def test_push_replaces_offers_only(http: TestClient, keitaro: FakeKeitaro) -> No
     assert _lines(_stream(removed, "Offer"))[0]["deleted"] is True
 
 
+def test_push_of_an_omitted_flow_is_not_found(http: TestClient, keitaro: FakeKeitaro) -> None:
+    store_campaign()
+    _flows(keitaro)
+    _ok(http.post("/campaigns/100/editor/fetch"))
+    keitaro.streams[100] = [remote_stream(200, name="Country", position=1, flow_schema="redirect")]
+    _ok(http.post("/campaigns/100/editor/fetch"))
+    _ok(_bring_back_stream(http, 201))
+    keitaro.streams[100] = [remote_stream(200, name="Country", position=1, flow_schema="redirect")]
+    keitaro.bodies[201] = {
+        "state": "deleted",
+        "filters": [{"name": "country"}],
+        "offers": [],
+        "action_payload": "https://www.google.com",
+    }
+    updates = len(keitaro.updates)
+    reads = len(keitaro.reads)
+    rejected = http.post("/campaigns/100/editor/streams/201/push")
+    offer = _stream(_ok(http.get("/campaigns/100/editor")), "Offer")
+
+    assert rejected.status_code == status.HTTP_404_NOT_FOUND
+    assert len(keitaro.updates) == updates
+    assert keitaro.reads[reads:] == [("streams", 100)]
+    assert offer["deleted"] is False
+    assert offer["dirty"] is True
+    assert [(line["share"], line["deleted"]) for line in _lines(offer)] == [
+        ("0.00", True),
+        ("0.00", True),
+        ("0.00", True),
+    ]
+
+
 def test_cancel_drops_unpublished_bindings(http: TestClient, keitaro: FakeKeitaro) -> None:
     store_campaign()
     _flows(keitaro)
@@ -492,6 +554,10 @@ def _remove(http: TestClient, binding_id: int) -> httpx.Response:
 
 def _bring_back(http: TestClient, binding_id: int) -> httpx.Response:
     return http.post(f"/campaigns/100/editor/offers/{binding_id}/bring-back")
+
+
+def _bring_back_stream(http: TestClient, stream_id: int) -> httpx.Response:
+    return http.post(f"/campaigns/100/editor/streams/{stream_id}/bring-back")
 
 
 def _pin(http: TestClient, binding_id: int, share: str) -> httpx.Response:

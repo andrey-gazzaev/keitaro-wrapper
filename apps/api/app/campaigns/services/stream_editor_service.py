@@ -87,7 +87,7 @@ class StreamEditorService:
         return self._unpin(campaign_id, binding_id)
 
     def push(self, campaign_id: int, stream_id: int) -> StreamEditor:
-        """Editor state after active offers replace the live flow's offers."""
+        """Editor state after active offers replace a listed flow. Missing when that flow is omitted."""
         try:
             return self._push(campaign_id, stream_id)
         except KeitaroError as error:
@@ -96,6 +96,10 @@ class StreamEditorService:
     def cancel(self, campaign_id: int, stream_id: int) -> StreamEditor:
         """Editor state after unpublished bindings are dropped and the snapshot is restored."""
         return self._cancel(campaign_id, stream_id)
+
+    def bring_back_stream(self, campaign_id: int, stream_id: int) -> StreamEditor:
+        """Editor state after this deleted stream is open again."""
+        return self._bring_back_stream(campaign_id, stream_id)
 
     def _fetch(self, campaign_id: int) -> StreamEditor:
         self._campaign(campaign_id)
@@ -207,6 +211,11 @@ class StreamEditorService:
         if stream.deleted:
             raise StreamEditorError("conflict")
 
+        returned = {remote.id for remote in self._keitaro.list_streams(campaign_id)}
+
+        if stream.keitaro_id not in returned:
+            raise StreamEditorError("not_found")
+
         body = self._keitaro.get_stream(stream_id)
         bindings = self._bindings.list_for_stream(stream_id)
         body["offers"] = [
@@ -253,6 +262,21 @@ class StreamEditorService:
         self._streams.set_deleted_flags(
             stream.keitaro_id,
             deleted=stream.published_deleted,
+            published_deleted=stream.published_deleted,
+        )
+
+        return self._editor(campaign_id)
+
+    def _bring_back_stream(self, campaign_id: int, stream_id: int) -> StreamEditor:
+        self._campaign(campaign_id)
+        stream = self._require_stream(campaign_id, stream_id)
+
+        if not stream.deleted:
+            raise StreamEditorError("conflict")
+
+        self._streams.set_deleted_flags(
+            stream.keitaro_id,
+            deleted=False,
             published_deleted=stream.published_deleted,
         )
 

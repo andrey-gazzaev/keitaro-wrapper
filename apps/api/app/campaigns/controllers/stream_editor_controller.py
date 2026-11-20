@@ -49,6 +49,7 @@ class StreamEditorController:
         self.router.post("/{campaign_id}/editor/offers/{binding_id}/unpin")(self.unpin_offer)
         self.router.post("/{campaign_id}/editor/streams/{stream_id}/push")(self.push_stream)
         self.router.post("/{campaign_id}/editor/streams/{stream_id}/cancel")(self.cancel_stream)
+        self.router.post("/{campaign_id}/editor/streams/{stream_id}/bring-back")(self.bring_back_stream)
 
     def show_editor(self, campaign_id: int, editor: StreamEditorServiceDep) -> StreamEditorOutDto:
         """Stored streams for this campaign. Empty before the first fetch."""
@@ -130,6 +131,15 @@ class StreamEditorController:
     ) -> StreamEditorOutDto:
         """Drop unpublished bindings, restore the snapshot, and return the editor."""
         return self._call(lambda: editor.cancel(campaign_id, stream_id))
+
+    def bring_back_stream(
+        self,
+        campaign_id: int,
+        stream_id: int,
+        editor: StreamEditorServiceDep,
+    ) -> StreamEditorOutDto:
+        """Restore one deleted stream and return the editor."""
+        return self._call(lambda: editor.bring_back_stream(campaign_id, stream_id))
 
     def _call(self, load: Callable[[], StreamEditor]) -> StreamEditorOutDto:
         try:
