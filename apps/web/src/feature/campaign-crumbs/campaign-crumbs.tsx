@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { campaignIdFromParam, useCampaignTitle } from '@/hooks';
+import { useCampaignTitle } from '@/hooks';
+import { campaignIdFromParam } from '@/utils';
 import { Crumbs } from '@/ui';
 
 /** Trail for the current page. The campaign name comes from the stored list. */
