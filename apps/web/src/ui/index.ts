@@ -3,6 +3,7 @@ export { Card } from './card/card';
 export { Chip } from './chip/chip';
 export { Crumbs } from './crumbs/crumbs';
 export { Field } from './field/field';
+export { Input } from './input/input';
 export { Modal } from './modal/modal';
 export { Page } from './page/page';
 export { PageHead } from './page-head/page-head';
