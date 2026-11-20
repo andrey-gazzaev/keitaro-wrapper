@@ -50,7 +50,7 @@ class CampaignController:
         return [self._response(campaign) for campaign in campaigns.list()]
 
     def sync_campaigns(self, campaigns: CampaignServiceDep) -> list[CampaignOutDto]:
-        """Compare live rows with Keitaro and return every stored campaign."""
+        """Sync stored campaigns with the Keitaro list and return every stored campaign."""
         try:
             synced = campaigns.sync()
         except CampaignCallError as error:

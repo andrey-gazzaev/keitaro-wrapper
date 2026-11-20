@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 
 from app.campaigns.models.campaign import Campaign
 from app.campaigns.models.campaign_draft import CampaignDraft
+from app.campaigns.models.campaign_remote import CampaignRemote
 from app.campaigns.repositories.campaign_record import CampaignRecord
 from app.campaigns.repositories.campaign_repository import CampaignRepository, CampaignRepositoryDep
 from app.campaigns.services.campaign_call_error import CampaignCallError
@@ -82,20 +83,25 @@ class CampaignService:
         return Campaign(id=campaign_id, name=draft.name, deleted=False)
 
     def _sync(self) -> list[Campaign]:
-        stale_ids = [row.keitaro_id for row in self._campaigns.list_live() if self._is_stale(row)]
-        self._campaigns.mark_deleted(stale_ids, datetime.now(UTC))
+        remote = self._keitaro.list_campaigns()
+        presence = self._match.presence(self._campaigns.list_newest(), remote)
+        now = datetime.now(UTC)
+
+        for campaign in presence.add:
+            self._campaigns.insert(
+                keitaro_id=campaign.id,
+                name=campaign.name,
+                alias=_stored_alias(campaign),
+                domain_id=campaign.domain_id,
+                group_id=campaign.group_id,
+                traffic_source_id=campaign.traffic_source_id,
+                created_at=now,
+            )
+
+        self._campaigns.mark_deleted(list(presence.tombstone_ids), now)
+        self._campaigns.mark_live(list(presence.restore_ids))
 
         return self.list()
-
-    def _is_stale(self, row: CampaignRecord) -> bool:
-        remote = self._keitaro.get_campaign(row.keitaro_id)
-
-        if remote is None or not self._match.matches_campaign(row, remote):
-            return True
-
-        streams = self._keitaro.list_streams(row.keitaro_id)
-
-        return not self._match.matches_streams(row, streams)
 
     def _placement(self) -> tuple[int, int, int]:
         domains = self._keitaro.list_domains()
@@ -115,6 +121,13 @@ def get_campaign_service(campaigns: CampaignRepositoryDep, keitaro: KeitaroDep) 
 
 def _alias() -> str:
     return f"c{secrets.token_hex(6)}"
+
+
+def _stored_alias(campaign: CampaignRemote) -> str:
+    if campaign.alias == "":
+        return f"k{campaign.id}"
+
+    return campaign.alias
 
 
 def _campaign(row: CampaignRecord) -> Campaign:

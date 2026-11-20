@@ -49,6 +49,15 @@ class FakeKeitaro:
     reads: list[tuple[str, int]]
     """Campaign and flow reads, in call order. Empty before the first read."""
 
+    catalog: list[CampaignRemote] | None
+    """Catalog returned by list_campaigns. None builds the list from campaigns created here."""
+
+    omitted: set[int]
+    """Created campaign ids left out of the built catalog. Empty when every created campaign is listed."""
+
+    list_error: KeitaroError | None
+    """Error raised by list_campaigns. None when the list succeeds."""
+
     setup_error: KeitaroError | None
     """Error raised before a setup call. None when setup should succeed."""
 
@@ -73,6 +82,9 @@ class FakeKeitaro:
         self.campaign_errors = set()
         self.stream_errors = set()
         self.reads = []
+        self.catalog = None
+        self.omitted = set()
+        self.list_error = None
         self.setup_error = None
         self.create_error = None
         self.stream_error = None
@@ -134,6 +146,27 @@ class FakeKeitaro:
 
         return stream_id
 
+    def list_campaigns(self) -> list[CampaignRemote]:
+        """Every campaign on this tracker. Empty when the tracker has none."""
+        self.reads.append(("campaigns", 0))
+
+        if self.list_error is not None:
+            raise self.list_error
+
+        if self.catalog is not None:
+            return list(self.catalog)
+
+        listed: list[CampaignRemote] = []
+
+        for campaign_id in self.campaigns:
+            if campaign_id in self.omitted:
+                continue
+
+            override = self.campaign_overrides.get(campaign_id)
+            listed.append(self.echo(campaign_id) if override is None else override)
+
+        return listed
+
     def get_campaign(self, campaign_id: int) -> CampaignRemote | None:
         """Campaign fields for this id. None when the test marks the campaign missing."""
         self.reads.append(("campaign", campaign_id))
@@ -161,16 +194,20 @@ class FakeKeitaro:
     def echo(self, campaign_id: int, *, state: str = "active", name: str | None = None) -> CampaignRemote:
         """Campaign fields echoed from the created body."""
         body = self.campaigns[campaign_id]
+        domain_id = body["domain_id"]
         group_id = body["group_id"]
         source_id = body["traffic_source_id"]
+        assert isinstance(domain_id, int)
         assert isinstance(group_id, int)
         assert isinstance(source_id, int)
 
         return CampaignRemote(
+            id=campaign_id,
             name=str(body["name"] if name is None else name),
             alias=str(body["alias"]),
             type=str(body["type"]),
             state=state,
+            domain_id=domain_id,
             group_id=group_id,
             traffic_source_id=source_id,
         )
@@ -178,6 +215,29 @@ class FakeKeitaro:
     def _raise_setup(self) -> None:
         if self.setup_error is not None:
             raise self.setup_error
+
+
+def remote_campaign(
+    campaign_id: int,
+    *,
+    name: str = "Imported",
+    alias: str = "imported",
+    state: str = "active",
+    domain_id: int | None = 11,
+    group_id: int | None = 21,
+    traffic_source_id: int | None = 31,
+) -> CampaignRemote:
+    """One catalog item. Tests pass the fields the list should return."""
+    return CampaignRemote(
+        id=campaign_id,
+        name=name,
+        alias=alias,
+        type="position",
+        state=state,
+        domain_id=domain_id,
+        group_id=group_id,
+        traffic_source_id=traffic_source_id,
+    )
 
 
 def fake_keitaro() -> FakeKeitaro:

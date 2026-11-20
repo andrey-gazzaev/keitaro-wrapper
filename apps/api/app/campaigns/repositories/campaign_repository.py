@@ -40,16 +40,16 @@ class CampaignRepository:
         keitaro_id: int,
         name: str,
         alias: str,
-        country: str,
-        offer_id: int,
-        domain_id: int,
-        group_id: int,
-        traffic_source_id: int,
-        country_stream_id: int,
-        offer_stream_id: int,
         created_at: datetime,
+        country: str | None = None,
+        offer_id: int | None = None,
+        domain_id: int | None = None,
+        group_id: int | None = None,
+        traffic_source_id: int | None = None,
+        country_stream_id: int | None = None,
+        offer_stream_id: int | None = None,
     ) -> None:
-        """Store one live campaign."""
+        """Store one live campaign. Snapshot fields stay empty when omitted."""
         self._session.add(
             CampaignRecord(
                 keitaro_id=keitaro_id,
@@ -66,6 +66,14 @@ class CampaignRepository:
                 deleted_at=None,
             )
         )
+        self._session.flush()
+
+    def mark_live(self, keitaro_ids: list[int]) -> None:
+        """Clear the tombstone on these campaigns. Nothing changes when none are listed."""
+        for keitaro_id in keitaro_ids:
+            row = self._session.get(CampaignRecord, keitaro_id)
+            row.deleted_at = None
+
         self._session.flush()
 
     def mark_deleted(self, keitaro_ids: list[int], deleted_at: datetime) -> None:

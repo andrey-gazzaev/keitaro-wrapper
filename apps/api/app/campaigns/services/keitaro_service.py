@@ -62,6 +62,15 @@ class KeitaroService:
         """Create a flow and return its Keitaro id."""
         return _resource_id(self._json(self._raise_for_status(self._request("POST", "/streams", json=body))))
 
+    def list_campaigns(self) -> list[CampaignRemote]:
+        """Every campaign on this tracker. Empty when the tracker has none."""
+        payload = self._json(self._raise_for_status(self._request("GET", "/campaigns")))
+
+        if not isinstance(payload, list):
+            raise KeitaroError("unavailable")
+
+        return [_campaign_remote(item) for item in payload]
+
     def get_campaign(self, campaign_id: int) -> CampaignRemote | None:
         """Campaign fields, or none when Keitaro answers 404."""
         response = self._request("GET", f"/campaigns/{campaign_id}")
@@ -74,14 +83,7 @@ class KeitaroService:
         if not isinstance(payload, dict):
             raise KeitaroError("unavailable")
 
-        return CampaignRemote(
-            name=text(payload.get("name")),
-            alias=text(payload.get("alias")),
-            type=text(payload.get("type")),
-            state=text(payload.get("state")),
-            group_id=whole(payload.get("group_id")),
-            traffic_source_id=whole(payload.get("traffic_source_id")),
-        )
+        return _campaign_remote({**payload, "id": campaign_id})
 
     def list_streams(self, campaign_id: int) -> list[StreamRemote]:
         """Flows on one campaign. Empty when the campaign has none."""
@@ -179,6 +181,27 @@ def _ids(payload: object) -> list[int]:
         ids.append(item_id)
 
     return ids
+
+
+def _campaign_remote(payload: object) -> CampaignRemote:
+    if not isinstance(payload, dict):
+        raise KeitaroError("unavailable")
+
+    campaign_id = whole(payload.get("id"))
+
+    if campaign_id is None:
+        raise KeitaroError("unavailable")
+
+    return CampaignRemote(
+        id=campaign_id,
+        name=text(payload.get("name")),
+        alias=text(payload.get("alias")),
+        type=text(payload.get("type")),
+        state=text(payload.get("state")),
+        domain_id=whole(payload.get("domain_id")),
+        group_id=whole(payload.get("group_id")),
+        traffic_source_id=whole(payload.get("traffic_source_id")),
+    )
 
 
 def _resource_id(payload: object) -> int:

@@ -16,7 +16,7 @@ from app.campaigns.repositories.stream_offer_record import StreamOfferRecord
 from app.campaigns.repositories.stream_record import StreamRecord
 from app.campaigns.services.keitaro_error import KeitaroError
 from app.campaigns.services.keitaro_service import get_keitaro
-from app.campaigns.tests.campaign_controller_mocks import FakeKeitaro, fake_keitaro, remote_stream
+from app.campaigns.tests.campaign_controller_mocks import FakeKeitaro, fake_keitaro, remote_campaign, remote_stream
 from app.db import SessionLocal, engine
 from app.main import app
 from app.schema import apply_schema
@@ -254,10 +254,10 @@ def test_invalid_campaign_is_rejected(http: TestClient, keitaro: FakeKeitaro) ->
     assert _count() == 0
 
 
-def test_sync_mismatch_sets_deleted_at_and_keeps_the_row(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_omitted_id_sets_deleted_at_and_keeps_the_row(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http)
     campaign_id = int(created["id"])
-    keitaro.campaign_overrides[campaign_id] = keitaro.echo(campaign_id, name="Other")
+    keitaro.omitted.add(campaign_id)
     response = http.post("/campaigns/sync")
     row = _row(campaign_id)
 
@@ -265,31 +265,35 @@ def test_sync_mismatch_sets_deleted_at_and_keeps_the_row(http: TestClient, keita
     assert response.json() == [{"id": campaign_id, "name": _name(), "deleted": True}]
     assert row.deleted_at is not None
     assert row.name == _name()
+    assert ("campaign", campaign_id) not in keitaro.reads
+    assert ("streams", campaign_id) not in keitaro.reads
 
 
-def test_sync_404_is_a_mismatch(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_name_difference_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http)
     campaign_id = int(created["id"])
-    keitaro.campaign_overrides[campaign_id] = None
+    keitaro.campaign_overrides[campaign_id] = keitaro.echo(campaign_id, name="Other")
     response = http.post("/campaigns/sync")
+    row = _row(campaign_id)
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]["deleted"] is True
-    assert ("streams", campaign_id) not in keitaro.reads
-    assert _row(campaign_id).deleted_at is not None
+    assert response.json() == [{"id": campaign_id, "name": _name(), "deleted": False}]
+    assert row.deleted_at is None
+    assert row.name == _name()
 
 
-def test_sync_deleted_state_is_a_mismatch(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_deleted_state_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http)
     campaign_id = int(created["id"])
     keitaro.campaign_overrides[campaign_id] = keitaro.echo(campaign_id, state="deleted")
     response = http.post("/campaigns/sync")
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]["deleted"] is True
+    assert response.json()[0]["deleted"] is False
+    assert _row(campaign_id).deleted_at is None
 
 
-def test_sync_match_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_listed_campaign_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http)
     campaign_id = int(created["id"])
     response = http.post("/campaigns/sync")
@@ -298,11 +302,12 @@ def test_sync_match_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitar
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == [{"id": campaign_id, "name": _name(), "deleted": False}]
     assert row.deleted_at is None
-    assert ("campaign", campaign_id) in keitaro.reads
-    assert ("streams", campaign_id) in keitaro.reads
+    assert ("campaigns", 0) in keitaro.reads
+    assert ("campaign", campaign_id) not in keitaro.reads
+    assert ("streams", campaign_id) not in keitaro.reads
 
 
-def test_sync_disabled_campaign_still_matches(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_disabled_campaign_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http)
     campaign_id = int(created["id"])
     keitaro.campaign_overrides[campaign_id] = keitaro.echo(campaign_id, state="disabled")
@@ -313,42 +318,12 @@ def test_sync_disabled_campaign_still_matches(http: TestClient, keitaro: FakeKei
     assert _row(campaign_id).deleted_at is None
 
 
-def test_sync_json_country_payload_matches(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_flow_difference_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http, country="us")
     campaign_id = int(created["id"])
-    row = _row(campaign_id)
     posted = keitaro.streams[campaign_id]
     country_body = dict(posted[0][1])
     country_body["filters"] = [{"name": "country", "mode": "accept", "payload": '["US"]'}]
-    keitaro.stream_overrides[campaign_id] = [
-        remote_stream(posted[0][0], country_body),
-        remote_stream(posted[1][0], posted[1][1]),
-    ]
-    response = http.post("/campaigns/sync")
-
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]["deleted"] is False
-    assert row.country == "US"
-
-
-def test_sync_error_tombstones_nothing(http: TestClient, keitaro: FakeKeitaro) -> None:
-    first = _post(http, name=_name("first"))
-    second = _post(http, name=_name("second"))
-    first_id = int(first["id"])
-    second_id = int(second["id"])
-    keitaro.campaign_overrides[first_id] = None
-    keitaro.campaign_errors.add(second_id)
-    response = http.post("/campaigns/sync")
-
-    assert response.status_code == status.HTTP_502_BAD_GATEWAY
-    assert _row(first_id).deleted_at is None
-    assert _row(second_id).deleted_at is None
-
-
-def test_sync_offer_change_and_extra_stream_still_match(http: TestClient, keitaro: FakeKeitaro) -> None:
-    created = _post(http)
-    campaign_id = int(created["id"])
-    posted = keitaro.streams[campaign_id]
     offer_body = dict(posted[1][1])
     offer_body["offers"] = [
         {"offer_id": 7, "share": 50, "state": "active"},
@@ -357,28 +332,128 @@ def test_sync_offer_change_and_extra_stream_still_match(http: TestClient, keitar
     extra = dict(posted[1][1])
     extra["position"] = 3
     keitaro.stream_overrides[campaign_id] = [
-        remote_stream(posted[0][0], posted[0][1]),
+        remote_stream(posted[0][0], country_body),
         remote_stream(posted[1][0], offer_body),
         remote_stream(999, extra),
+    ]
+    keitaro.stream_errors.add(campaign_id)
+    response = http.post("/campaigns/sync")
+    row = _row(campaign_id)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()[0]["deleted"] is False
+    assert row.deleted_at is None
+    assert row.country == "US"
+    assert ("streams", campaign_id) not in keitaro.reads
+
+
+def test_sync_error_leaves_every_row_unchanged(http: TestClient, keitaro: FakeKeitaro) -> None:
+    first = _post(http, name=_name("first"))
+    second = _post(http, name=_name("second"))
+    first_id = int(first["id"])
+    second_id = int(second["id"])
+    keitaro.omitted.add(first_id)
+    keitaro.list_error = KeitaroError("unavailable")
+    response = http.post("/campaigns/sync")
+
+    assert response.status_code == status.HTTP_502_BAD_GATEWAY
+    assert _row(first_id).deleted_at is None
+    assert _row(second_id).deleted_at is None
+    assert _count() == 2
+
+
+def test_sync_inserts_listed_campaigns_when_the_table_is_empty(http: TestClient, keitaro: FakeKeitaro) -> None:
+    keitaro.catalog = [
+        remote_campaign(4, name="Imported", alias="spring", domain_id=11, group_id=21, traffic_source_id=31),
+        remote_campaign(5, name="Second", alias="summer", domain_id=None, group_id=None, traffic_source_id=None),
+    ]
+    started = datetime.now(UTC)
+    response = http.post("/campaigns/sync")
+    finished = datetime.now(UTC)
+    first = _row(4)
+    second = _row(5)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert {item["id"] for item in response.json()} == {4, 5}
+    assert all(item["deleted"] is False for item in response.json())
+    assert first.name == "Imported"
+    assert first.alias == "spring"
+    assert first.domain_id == 11
+    assert first.group_id == 21
+    assert first.traffic_source_id == 31
+    assert first.country is None
+    assert first.offer_id is None
+    assert first.country_stream_id is None
+    assert first.offer_stream_id is None
+    assert first.deleted_at is None
+    assert _wall(started) <= _wall(first.created_at) <= _wall(finished)
+    assert second.country is None
+    assert second.offer_stream_id is None
+    assert second.deleted_at is None
+    assert first.created_at == second.created_at
+
+
+def test_sync_stores_a_blank_name_and_a_fallback_alias(http: TestClient, keitaro: FakeKeitaro) -> None:
+    keitaro.catalog = [remote_campaign(8, name="", alias="", domain_id=None, group_id=None, traffic_source_id=None)]
+    response = http.post("/campaigns/sync")
+    row = _row(8)
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [{"id": 8, "name": "", "deleted": False}]
+    assert row.name == ""
+    assert row.alias == "k8"
+    assert row.deleted_at is None
+
+
+def test_sync_counts_a_duplicate_id_once(http: TestClient, keitaro: FakeKeitaro) -> None:
+    keitaro.catalog = [
+        remote_campaign(6, name="First", alias="one"),
+        remote_campaign(6, name="Second", alias="two"),
     ]
     response = http.post("/campaigns/sync")
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]["deleted"] is False
-    assert _row(campaign_id).deleted_at is None
+    assert response.json() == [{"id": 6, "name": "First", "deleted": False}]
+    assert _count() == 1
+    assert _row(6).alias == "one"
 
 
-def test_sync_stream_error_is_not_a_mismatch(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_keeps_stored_fields_when_the_listed_campaign_differs(http: TestClient, keitaro: FakeKeitaro) -> None:
     created = _post(http)
     campaign_id = int(created["id"])
-    keitaro.stream_errors.add(campaign_id)
+    before = _row(campaign_id)
+    keitaro.catalog = [
+        remote_campaign(
+            campaign_id,
+            name="Other",
+            alias="other-alias",
+            state="deleted",
+            domain_id=99,
+            group_id=98,
+            traffic_source_id=97,
+        )
+    ]
     response = http.post("/campaigns/sync")
+    row = _row(campaign_id)
 
-    assert response.status_code == status.HTTP_502_BAD_GATEWAY
-    assert _row(campaign_id).deleted_at is None
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [{"id": campaign_id, "name": before.name, "deleted": False}]
+    assert row.name == before.name
+    assert row.alias == before.alias
+    assert row.country == before.country
+    assert row.offer_id == before.offer_id
+    assert row.domain_id == before.domain_id
+    assert row.group_id == before.group_id
+    assert row.traffic_source_id == before.traffic_source_id
+    assert row.country_stream_id == before.country_stream_id
+    assert row.offer_stream_id == before.offer_stream_id
+    assert row.deleted_at is None
 
 
-def test_sync_skips_tombstones_and_returns_newest_first(http: TestClient, keitaro: FakeKeitaro) -> None:
+def test_sync_listed_tombstone_becomes_live_and_returns_newest_first(
+    http: TestClient,
+    keitaro: FakeKeitaro,
+) -> None:
     older = _post(http, name=_name("older"))
     current = _post(http, name=_name("current"))
     newer = _post(http, name=_name("newer"))
@@ -398,12 +473,17 @@ def test_sync_skips_tombstones_and_returns_newest_first(http: TestClient, keitar
         _name("current"),
         _name("older"),
     ]
-    assert response.json()[1]["deleted"] is True
+    assert response.json()[1]["deleted"] is False
     assert ("campaign", current_id) not in keitaro.reads
     assert ("streams", current_id) not in keitaro.reads
-    assert _row(current_id).deleted_at is not None
+    assert _row(current_id).deleted_at is None
+    assert _row(current_id).name == _name("current")
     assert _row(older_id).deleted_at is None
     assert _row(newer_id).deleted_at is None
+
+
+def _wall(value: datetime) -> datetime:
+    return value.replace(tzinfo=None)
 
 
 def _count() -> int:

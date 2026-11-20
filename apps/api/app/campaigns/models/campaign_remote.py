@@ -5,7 +5,10 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class CampaignRemote:
-    """Campaign fields read from Keitaro for a sync comparison."""
+    """One campaign read from Keitaro."""
+
+    id: int
+    """Keitaro campaign id."""
 
     name: str
     """Campaign name. Empty when Keitaro omits it."""
@@ -18,6 +21,9 @@ class CampaignRemote:
 
     state: str
     """Campaign state. Empty when Keitaro omits it."""
+
+    domain_id: int | None
+    """Domain id. None when Keitaro has no domain."""
 
     group_id: int | None
     """Group id. None when Keitaro has no group."""
