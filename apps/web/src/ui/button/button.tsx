@@ -14,6 +14,9 @@ type ButtonProps = {
   /** True while the control cannot be used. */
   readonly disabled?: boolean;
 
+  /** True while this action is in progress. False when the control is idle. */
+  readonly pending?: boolean;
+
   /** Label shown on the control. */
   readonly children: ReactNode;
 
@@ -27,6 +30,7 @@ export const Button = memo(function Button({
   size = 'md',
   type = 'button',
   disabled = false,
+  pending = false,
   children,
   onClick,
 }: ButtonProps) {
@@ -35,7 +39,14 @@ export const Button = memo(function Button({
     .join(' ');
 
   return (
-    <button className={className} type={type} disabled={disabled} onClick={onClick}>
+    <button
+      className={className}
+      type={type}
+      disabled={disabled || pending}
+      aria-busy={pending || undefined}
+      onClick={onClick}
+    >
+      {pending ? <span className={styles.loader} aria-hidden="true" /> : null}
       {children}
     </button>
   );
