@@ -1,11 +1,10 @@
 """Whether a stored campaign still matches Keitaro."""
 
-import json
-
 from app.campaigns.models.campaign_remote import CampaignRemote
 from app.campaigns.models.stream_remote import StreamRemote
 from app.campaigns.repositories.campaign_record import CampaignRecord
 from app.campaigns.services.campaign_stream_service import CampaignStreamService
+from app.campaigns.utilities.country_payload import country_payload
 
 
 class CampaignMatchService:
@@ -59,7 +58,7 @@ def _country_stream_matches(row: CampaignRecord, stream: StreamRemote) -> bool:
     return (
         country_filter.name == "country"
         and country_filter.mode == "accept"
-        and _country_payload(country_filter.payload) == [row.country]
+        and country_payload(country_filter.payload) == [row.country]
     )
 
 
@@ -71,18 +70,3 @@ def _offer_stream_shape(stream: StreamRemote) -> bool:
         return False
 
     return len(stream.filters) == 0
-
-
-def _country_payload(payload: object) -> list[str] | None:
-    value = payload
-
-    if isinstance(value, str):
-        try:
-            value = json.loads(value)
-        except json.JSONDecodeError:
-            return None
-
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        return None
-
-    return value
