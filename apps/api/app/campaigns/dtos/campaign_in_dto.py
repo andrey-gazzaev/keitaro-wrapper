@@ -1,10 +1,8 @@
 """Campaign request body."""
 
-import os
 from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator
-
 
 class CampaignInDto(BaseModel):
     """Name, country, and offer used to create one campaign."""
@@ -26,11 +24,6 @@ class CampaignInDto(BaseModel):
 
         if trimmed == "":
             raise ValueError("Name is empty.")
-
-        prefix = os.environ.get("CAMPAIGN_PREFIX", "")
-
-        if prefix != "" and not trimmed.startswith(prefix):
-            raise ValueError("Name is missing the required prefix.")
 
         return trimmed
 
