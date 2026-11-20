@@ -9,6 +9,10 @@ alwaysApply: false
 
 A component takes `children` and simple props such as `variant` and `selected`. It does not know heroes, matches, queries, or pages.
 
+A text control is `Input`. The parent passes `value` and `onChange`, or `defaultValue` when the input is uncontrolled. It does not write an `<input>` and cache that element.
+
+A dialog is the `<dialog>` element, opened with `showModal()`. Escape and the backdrop belong to that element. Do not rebuild them with a `div`, `role="dialog"`, and a key listener.
+
 A UI component does not import another UI component. The parent — a feature, page, or app — composes the layout. `index.ts` only re-exports the components.
 
 ```tsx

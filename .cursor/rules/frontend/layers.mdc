@@ -5,14 +5,14 @@ alwaysApply: false
 ---
 # Layers
 
-Dependency direction: `pages → widgets | feature → context → hooks → queries → dtos | services → models`. Features and hooks also use `view-models` and `mappers`. `mappers` use `models`, `view-models`, and `services`. DTO mappers live inside `dtos`. `view-models` use `models`. `ui` does not know the domain.
+Dependency direction: `pages → widgets | feature → context → hooks → queries → dtos | services → models`. Features and hooks also use `view-models` and `mappers`. `mappers` use `models`, `view-models`, and `services`. DTO mappers live inside `dtos`. `view-models` use `models`. `ui` does not know the domain. `utils` is pure functions and imports none of these layers. Features, widgets, pages, and hooks may import `@/utils`.
 
 - `app` is the entry point, navigation, and route composition.
-- `pages` of one task import a feature. Pages of several tasks import a widget. Page components live in `src/views`.
-- `widgets` compose several features. They do not import `dtos` or `services`.
-- `feature` is one task: a form, table, or card. It does not import widgets. Its view-model hook lives in `hooks`.
+- `pages` import a widget when the screen composes several features, and a feature when the screen is that one task. Page components live in `src/views`.
+- `widgets` compose several features, such as a table, a form, and a fetch button. They do not import `dtos` or `services`. A widget may call the hook that lives next to those features.
+- `feature` is one task: a form, a table, or a card. It does not import widgets. A hook used by that one feature lives next to it. A hook shared by several features lives in `src/hooks`.
 - `context` shares one load with a subtree. It may use `hooks`, `queries`, `services`, `models`, and `view-models`. It does not import `dtos`, `feature`, `widgets`, `pages`, `app`, or `ui`. The raw context is not re-exported. A hook reads it and throws outside the provider.
-- `hooks` are the view-model hooks features share. They may use `queries`, `services`, `models`, `view-models`, and `mappers`. They do not import `dtos`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
+- `hooks` are view-model hooks. A shared one lives in `src/hooks`. They may use `queries`, `services`, `models`, `view-models`, and `mappers`. They do not import `dtos`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
 - `mappers` convert domain and view-models. They may use `models`, `view-models`, and `services`. They do not import `dtos`, `queries`, `hooks`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
 - `view-models` are the shapes a screen shows. They may use `models`. They do not import `services`, `dtos`, `queries`, `hooks`, `mappers`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.
 - `queries` are React Query hooks. They do not import `services`, `mappers`, `hooks`, `context`, `feature`, `widgets`, `pages`, `app`, or `ui`.

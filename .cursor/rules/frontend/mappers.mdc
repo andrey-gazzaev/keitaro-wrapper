@@ -15,7 +15,7 @@ A mapper converts a type from one layer into a type from another. It does not fe
 
 A mapper may call another mapper and a pure function from `services`, such as `formatPrice`. A view-model mapper imports `models`, `view-models`, and `services` only. A DTO mapper also imports its schema type. Neither imports `queries`, `hooks`, `feature`, `ui`, or `app`.
 
-An API method maps the parsed body. A hook calls the mapper. Wrap that call in `useMemo` only when the memoization rule says so. A feature maps a view-model back into a domain value by calling the mapper. Do not build the other layer's object inline.
+An API method maps the parsed body. A failure maps the same way: the DTO mapper returns a domain error, and a view mapper returns the field messages. The screen calls the view mapper. It does not read a status code. Wrap a mapper call in `useMemo` only when the memoization rule says so. A feature maps a view-model back into a domain value by calling the mapper. Do not build the other layer's object inline.
 
 ```typescript
 // Bad: the hook copies fields into the card

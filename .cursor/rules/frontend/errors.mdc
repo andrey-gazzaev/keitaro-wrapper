@@ -1,0 +1,23 @@
+---
+description: Failures travel the same path as data and arrive as field messages
+globs: apps/web/**/*.{ts,tsx}
+alwaysApply: false
+---
+# Errors
+
+A failure travels the same path as data. The screen never sees a status code.
+
+1. `readHttpFailure` in `dtos` reads the status and the body. Null means the throw was not an HTTP response, and the API method rethrows it.
+2. The API method throws a domain error. The DTO mapper chooses the kind and, when the body names fields, those fields. Axios does not leave `dtos`.
+3. A view mapper turns that error into messages. An empty string means the slot is fine. A failure that is not about one field is the form message.
+4. The component passes each string to `Field`. It does not branch on the kind.
+
+```tsx
+// Bad: the form switches on the HTTP status
+if (error.response?.status === 404) {
+  return 'Оффер не найден.';
+}
+
+// Good: the form renders the message it was given
+<Field label="Id оффера" error={failure.offerId} />
+```

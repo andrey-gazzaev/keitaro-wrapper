@@ -9,6 +9,7 @@ Every exported function, class, method, type, constant, and component has a shor
 
 - Say what the value means: the result, the unit, and when it is empty.
 - Do not retell the implementation. A comment that walks through the steps, names the formula, or repeats the code is noise.
+- Do not mention the server, storage, a rejected write, a sent payload, or when a fetch happens.
 - One or two sentences. Skip comments on re-exports and on private helpers.
 - Re-export barrels stay uncommented. The declaration they point at carries the comment.
 
@@ -20,4 +21,10 @@ export function recentPerformances(rows: readonly MatchPerformance[]): readonly 
 // Good: the comment states the result
 /** Newest matches, optionally limited to one hero. */
 export function recentPerformances(rows: readonly MatchPerformance[]): readonly MatchPerformance[] {}
+
+// Bad: the comment names the server and the stored form
+/** Country code as typed. The server stores the uppercase form. */
+
+// Good
+/** Country code. */
 ```

@@ -11,6 +11,7 @@ Shapes the screen shows live in `src/view-models`. Other layers import them only
 - The type name ends with `Vm`.
 - A view model is not changed after it is created. Every field is `readonly`, and lists are `readonly T[]`.
 - The type and every field have a short English comment: what it shows, and when the value is empty. Leave a blank line between fields. The comment stays immediately above its field.
+- A form failure is one view model of strings, one field per slot. An empty string means that slot is fine. The screen does not branch on the domain error.
 - A view model may use types from `@/models`. It does not import `services`, `dtos`, `queries`, `feature`, `widgets`, `pages`, `app`, or `ui`.
 
 ```typescript

@@ -10,7 +10,8 @@ Domain types live in `src/models`. Other layers import them only through `@/mode
 
 - One model type per file. The file name matches the type: `MatchPerformance` becomes `match-performance.ts`.
 - A model is not changed after it is created. Every field is `readonly`, and lists are `readonly T[]`. Build the next state as a new object.
-- The type and every field have a short English comment: what it is, its unit, and when the value is empty.
+- The type and every field have a short English comment: what it is, its unit, and when the value is empty. Do not mention the server, storage, a rejected write, or a fetch.
+- A failure is a class in this folder, one class per file. Its kind and, when the failure names fields, that list are the class data. Private aliases for those unions may sit in the same file.
 - Leave a blank line between fields. The comment stays immediately above its field.
 
 ```typescript

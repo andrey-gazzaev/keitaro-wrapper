@@ -9,7 +9,7 @@ A component, hook, or class has one reason to change. A short helper used only t
 
 A component renders one region and may hold that region's UI state, such as a search string or an open row. Filtering, aggregation, and formatting that take more than a few lines move to a named function or to the hook that owns the data.
 
-When the returned JSX has several regions a reader would name, each region is its own component in the same folder. One component per file still applies.
+When the returned JSX has several regions a reader would name, each region is its own component in the same folder. A table head, the actions of a form, and a block that was built inside `useMemo` are regions. One component per file still applies.
 
 A hook answers one question. A hook that only composes other hooks stays thin. Mapping goes to a mapper. The hook calls that mapper. UI state stays in the component.
 

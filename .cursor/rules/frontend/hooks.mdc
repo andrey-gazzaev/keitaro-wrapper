@@ -11,26 +11,22 @@ The name starts with `use` and a capital letter. A function that calls no hook i
 
 One hook per file. `useProductCards` lives in `use-product-cards.ts`. The name is the use case: what it takes and what it returns.
 
-Extract a hook when the same stateful logic is copied, or when an Effect synchronizes with something outside React. The component then states the intent. Do not wrap a single `useState`. Do not add a lifecycle wrapper such as `useMount`, `useEffectOnce`, or `useUpdateEffect`.
+Extract a hook when it composes several queries or mutations, when the same stateful logic is copied, or when an Effect synchronizes with something outside React. Do not wrap a single `useState`. Do not wrap one query and one mapper. Do not add a lifecycle wrapper such as `useMount`, `useEffectOnce`, or `useUpdateEffect`.
 
 The body runs on every render, so it stays pure. Call it unconditionally, and pass reactive values in as arguments. An event handler that an Effect calls is wrapped in `useEffectEvent`, so a new function does not re-subscribe the Effect.
 
-Mapping stays in a mapper from `@/mappers`. The hook calls that mapper. Wrap the call in `useMemo` only when the memoization rule says so. UI state stays in the component. The feature calls the hook and does not map the query itself.
+Mapping stays in a mapper from `@/mappers`. The component calls that mapper. A hook that already exists for several queries calls the mapper too. Wrap the call in `useMemo` only when the memoization rule says so. UI state stays in the component.
 
 ```tsx
-// Bad: the screen maps the query, and a sort is named like a hook
-const cards = (products.data ?? []).map(mapProductCard);
+// Bad: a hook that only forwards one query
+export function useCampaignBoard() {
+  const query = useCampaigns();
+  const campaigns = (query.data ?? []).map(mapCampaignRow);
 
-function useSorted(items: readonly Product[]) {
-  return items.toSorted();
+  return { campaigns, isLoading: query.isLoading };
 }
 
-// Good
-export function useProductCards() {
-  const products = useProducts();
-
-  const cards = (products.data ?? []).map(mapProductCard);
-
-  return { cards, isLoading: products.isLoading, error: products.error };
-}
+// Good: the board calls the query and the mapper
+const query = useCampaigns();
+const campaigns = (query.data ?? []).map(mapCampaignRow);
 ```

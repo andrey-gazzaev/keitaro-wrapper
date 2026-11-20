@@ -11,6 +11,7 @@ Schemas, API clients, and mappers live in three folders, each split by task: `sc
 - Mappers live in `mappers/{task}` and follow the mappers rule.
 - A task API is a class. Methods are not static. Create one instance in the folder and use it: `catalogApi`, `playerApi`.
 - The client uses axios. JSON is already in `response.data`, so there is no `getJson` wrapper: `schema.parse(data)`.
+- Axios stays in this layer. `readHttpFailure` reads the status and the body, and returns null when the throw was not an HTTP response. The API method throws the domain error from the DTO mapper. A Zod failure is rethrown as itself.
 - Replace `.then` and `.catch` chains with `async`/`await`.
 
 ```typescript

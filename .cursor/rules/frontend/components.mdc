@@ -7,7 +7,9 @@ alwaysApply: false
 
 A file contains one React component. Export it as a named function. That name is what React shows in DevTools.
 
-Wrap it in `memo` only when the memoization rule says the skip pays off.
+A control that is only a button ends with `Button`, such as `FetchStreamsButton`. Two handlers that only set a boolean on and off are one toggle: `setOpen((open) => !open)`.
+
+Render a memo child directly. Do not assign `<FetchStreamsButton />` to `useMemo`. Wrap the component in `memo` only when the memoization rule says the skip pays off.
 
 ```tsx
 /** Centered column for one page. */
