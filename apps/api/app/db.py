@@ -18,7 +18,7 @@ class Base(DeclarativeBase):
 
 
 def database_url() -> str:
-    """Postgres URL. The local API uses the published Docker port; Compose sets the in-network host."""
+    """Postgres URL. The local API uses the published Docker port; the Docker env file sets the in-network host."""
     return os.environ.get(
         "DATABASE_URL",
         "postgresql+psycopg://keitaro:keitaro@127.0.0.1:54330/keitaro",
