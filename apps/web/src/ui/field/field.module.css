@@ -13,6 +13,11 @@
   font-weight: 600;
 }
 
+.required::after {
+  content: ' *';
+  color: var(--danger);
+}
+
 .field input,
 .field select,
 .invalid input,
