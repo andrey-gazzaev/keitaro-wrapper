@@ -13,6 +13,8 @@ from app.campaigns.models.offer import Offer
 from app.campaigns.models.offer_remote import OfferRemote
 from app.campaigns.models.stream_remote import StreamRemote
 from app.campaigns.services.keitaro_error import KeitaroError
+from app.campaigns.utilities.text import text
+from app.campaigns.utilities.whole import whole
 
 
 class KeitaroService:
@@ -73,12 +75,12 @@ class KeitaroService:
             raise KeitaroError("unavailable")
 
         return CampaignRemote(
-            name=_text(payload.get("name")),
-            alias=_text(payload.get("alias")),
-            type=_text(payload.get("type")),
-            state=_text(payload.get("state")),
-            group_id=_whole(payload.get("group_id")),
-            traffic_source_id=_whole(payload.get("traffic_source_id")),
+            name=text(payload.get("name")),
+            alias=text(payload.get("alias")),
+            type=text(payload.get("type")),
+            state=text(payload.get("state")),
+            group_id=whole(payload.get("group_id")),
+            traffic_source_id=whole(payload.get("traffic_source_id")),
         )
 
     def list_streams(self, campaign_id: int) -> list[StreamRemote]:
@@ -94,10 +96,10 @@ class KeitaroService:
         """The offer for this id. A missing offer raises not_found."""
         payload = self._json(self._raise_for_status(self._request("GET", f"/offers/{offer_id}")))
 
-        if not isinstance(payload, dict) or _whole(payload.get("id")) is None:
+        if not isinstance(payload, dict) or whole(payload.get("id")) is None:
             raise KeitaroError("unavailable")
 
-        return Offer(id=offer_id, name=_text(payload.get("name")))
+        return Offer(id=offer_id, name=text(payload.get("name")))
 
     def get_stream(self, stream_id: int) -> dict[str, object]:
         """Live stream body. Filters and the redirect stay in the body for a later write."""
@@ -169,7 +171,7 @@ def _ids(payload: object) -> list[int]:
         if not isinstance(item, dict):
             raise KeitaroError("unavailable")
 
-        item_id = _whole(item.get("id"))
+        item_id = whole(item.get("id"))
 
         if item_id is None:
             raise KeitaroError("unavailable")
@@ -183,7 +185,7 @@ def _resource_id(payload: object) -> int:
     if not isinstance(payload, dict):
         raise KeitaroError("unavailable")
 
-    resource_id = _whole(payload.get("id"))
+    resource_id = whole(payload.get("id"))
 
     if resource_id is None:
         raise KeitaroError("unavailable")
@@ -195,7 +197,7 @@ def _stream(payload: object) -> StreamRemote:
     if not isinstance(payload, dict):
         raise KeitaroError("unavailable")
 
-    stream_id = _whole(payload.get("id"))
+    stream_id = whole(payload.get("id"))
 
     if stream_id is None:
         raise KeitaroError("unavailable")
@@ -203,19 +205,19 @@ def _stream(payload: object) -> StreamRemote:
     if "position" not in payload or payload.get("position") is None:
         position = 0
     else:
-        position = _whole(payload.get("position"))
+        position = whole(payload.get("position"))
 
         if position is None:
             raise KeitaroError("unavailable")
 
     return StreamRemote(
         id=stream_id,
-        name=_text(payload.get("name")),
+        name=text(payload.get("name")),
         position=position,
-        type=_text(payload.get("type")),
-        state=_text(payload.get("state")),
-        schema=_text(payload.get("schema")),
-        action_type=_text(payload.get("action_type")),
+        type=text(payload.get("type")),
+        state=text(payload.get("state")),
+        schema=text(payload.get("schema")),
+        action_type=text(payload.get("action_type")),
         action_payload=payload.get("action_payload"),
         offers=_offers(payload.get("offers")),
         filters=_filters(payload.get("filters")),
@@ -261,24 +263,10 @@ def _filters(payload: object) -> tuple[FilterRemote, ...]:
 
         filters.append(
             FilterRemote(
-                name=_text(item.get("name")),
-                mode=_text(item.get("mode")),
+                name=text(item.get("name")),
+                mode=text(item.get("mode")),
                 payload=item.get("payload"),
             )
         )
 
     return tuple(filters)
-
-
-def _text(value: object) -> str:
-    if isinstance(value, str):
-        return value
-
-    return ""
-
-
-def _whole(value: object) -> int | None:
-    if isinstance(value, bool) or not isinstance(value, int):
-        return None
-
-    return value
