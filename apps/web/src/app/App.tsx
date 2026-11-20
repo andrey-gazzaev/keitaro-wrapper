@@ -1,29 +1,12 @@
-import { CampaignEditorPage, HomePage } from '@/views';
+import { RouterProvider } from 'react-router-dom';
 import { Providers } from './providers';
+import { rootRouter } from './router';
 
 /** Application shell. */
 export function App() {
-  const campaignId = campaignIdFromPath(window.location.pathname);
-
   return (
     <Providers>
-      {campaignId === null ? <HomePage /> : <CampaignEditorPage campaignId={campaignId} />}
+      <RouterProvider router={rootRouter} />
     </Providers>
   );
-}
-
-function campaignIdFromPath(path: string): number | null {
-  const match = /^\/campaigns\/([1-9]\d*)$/.exec(path);
-
-  if (match === null) {
-    return null;
-  }
-
-  const campaignId = Number(match[1]);
-
-  if (!Number.isSafeInteger(campaignId)) {
-    return null;
-  }
-
-  return campaignId;
 }
