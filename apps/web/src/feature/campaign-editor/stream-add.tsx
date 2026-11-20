@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { memo, useCallback, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import axios from 'axios';
 import type { StreamRowVm } from '@/view-models';
+import { Button, Field } from '@/ui';
 import styles from './campaign-editor.module.css';
 
 type StreamAddProps = {
@@ -15,7 +16,7 @@ type StreamAddProps = {
 };
 
 /** Landings stream, offer id, and the Add control. */
-export function StreamAdd({ targets, onLookup, onAdd }: StreamAddProps) {
+export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: StreamAddProps) {
   const [offerId, setOfferId] = useState('');
   const [streamId, setStreamId] = useState<number | null>(null);
   const [found, setFound] = useState('');
@@ -24,58 +25,77 @@ export function StreamAdd({ targets, onLookup, onAdd }: StreamAddProps) {
   const known = targets.some((target) => target.streamId === streamId);
   const selected = known && streamId !== null ? streamId : (targets[0]?.streamId ?? null);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const onOffer = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setOfferId(event.target.value);
+  }, []);
 
-    const parsed = positiveOfferId(offerId);
+  const onStream = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
+    setStreamId(Number(event.target.value));
+  }, []);
 
-    if (parsed === null || selected === null) {
-      return;
-    }
+  const submit = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
 
-    try {
-      const name = await onLookup(parsed);
-      setFound(name);
-      setFailure('');
-      onAdd(selected, parsed);
-    } catch (error) {
-      setFound('');
-      setFailure(lookupFailure(error));
-    }
-  }
+      const parsed = positiveOfferId(offerId);
+
+      if (parsed === null || selected === null) {
+        return;
+      }
+
+      try {
+        const name = await onLookup(parsed);
+        setFound(name);
+        setFailure('');
+        onAdd(selected, parsed);
+      } catch (error) {
+        setFound('');
+        setFailure(lookupFailure(error));
+      }
+    },
+    [offerId, selected, onLookup, onAdd],
+  );
+
+  const streamSelect = useMemo(
+    () => (
+      <select value={selected ?? ''} onChange={onStream} disabled={targets.length === 0}>
+        {targets.map((target) => (
+          <option key={target.streamId} value={target.streamId}>
+            {target.flow === '' ? target.streamId : target.flow}
+          </option>
+        ))}
+      </select>
+    ),
+    [targets, selected, onStream],
+  );
+
+  const offerInput = useMemo(
+    () => <input value={offerId} inputMode="numeric" placeholder="106" onChange={onOffer} />,
+    [offerId, onOffer],
+  );
 
   return (
-    <form className={styles.add} onSubmit={submit}>
-      <label className={styles.field}>
-        Поток
-        <select
-          value={selected ?? ''}
-          onChange={(event) => setStreamId(Number(event.target.value))}
-          disabled={targets.length === 0}
-        >
-          {targets.map((target) => (
-            <option key={target.streamId} value={target.streamId}>
-              {target.flow === '' ? target.streamId : target.flow}
-            </option>
-          ))}
-        </select>
-      </label>
+    <form className={styles.panel} onSubmit={submit}>
+      <strong>Добавить оффер</strong>
 
-      <label className={styles.field}>
-        Id оффера
-        <input value={offerId} onChange={(event) => setOfferId(event.target.value)} />
-      </label>
+      <div className={styles.row}>
+        <div className={styles.slot}>
+          <Field label="Поток">{streamSelect}</Field>
+        </div>
+        <div className={styles.slot}>
+          <Field label="Id оффера">{offerInput}</Field>
+        </div>
+        <Button type="submit" variant="primary" disabled={selected === null}>
+          Add
+        </Button>
+      </div>
 
-      <button type="submit" disabled={selected === null}>
-        Add
-      </button>
-
-      {found !== '' ? <p className="status">{found}</p> : null}
+      {found !== '' ? <p className={styles.found}>{found}</p> : null}
 
       {failure !== '' ? <p className="status">{failure}</p> : null}
     </form>
   );
-}
+});
 
 function positiveOfferId(value: string): number | null {
   const trimmed = value.trim();

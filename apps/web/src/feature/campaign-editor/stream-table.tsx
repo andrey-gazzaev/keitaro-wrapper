@@ -1,6 +1,7 @@
-import type { FormEvent } from 'react';
+import { memo } from 'react';
 import type { StreamRowVm } from '@/view-models';
-import styles from './campaign-editor.module.css';
+import { Card, Table, TableCell, TableRow } from '@/ui';
+import { StreamTableRow } from './stream-table-row';
 
 type StreamTableProps = {
   /** Rows in display order. Empty before the first fetch. */
@@ -25,8 +26,20 @@ type StreamTableProps = {
   readonly onCancel: (streamId: number) => void;
 };
 
+const streamHead = (
+  <TableRow>
+    <TableCell header>Flow</TableCell>
+    <TableCell header align="end">
+      Share
+    </TableCell>
+    <TableCell header>Stats</TableCell>
+    <TableCell header>Trends</TableCell>
+    <TableCell header>Action</TableCell>
+  </TableRow>
+);
+
 /** Flows, shares, and the actions for one campaign. */
-export function StreamTable({
+export const StreamTable = memo(function StreamTable({
   rows,
   onRemove,
   onBringBack,
@@ -36,88 +49,21 @@ export function StreamTable({
   onCancel,
 }: StreamTableProps) {
   return (
-    <table className={styles.table}>
-      <thead>
-        <tr>
-          <th>Flow</th>
-          <th>Share</th>
-          <th>Stats</th>
-          <th>Trends</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-
-      <tbody>
+    <Card>
+      <Table head={streamHead}>
         {rows.map((row) => (
-          <tr key={row.key} className={rowClass(row)}>
-            <td>{row.flow}</td>
-            <td>
-              {row.header ? '' : row.share}
-
-              {row.pin ? (
-                <form className={styles.actions} onSubmit={(event) => submitPin(event, row.bindingId, onPin)}>
-                  <input name="share" key={`${row.bindingId}-${row.share}`} defaultValue={row.share} />
-                  <button type="submit">Pin</button>
-                  {row.pinned ? (
-                    <button type="button" onClick={() => onUnpin(row.bindingId)}>
-                      Unpin
-                    </button>
-                  ) : null}
-                </form>
-              ) : null}
-            </td>
-            <td />
-            <td />
-            <td>
-              <div className={styles.actions}>
-                {row.remove ? (
-                  <button type="button" onClick={() => onRemove(row.bindingId)}>
-                    Remove
-                  </button>
-                ) : null}
-                {row.bringBack ? (
-                  <button type="button" onClick={() => onBringBack(row.bindingId)}>
-                    Bring back
-                  </button>
-                ) : null}
-                {row.publish ? (
-                  <button type="button" onClick={() => onPush(row.streamId)}>
-                    Push to KT
-                  </button>
-                ) : null}
-                {row.publish ? (
-                  <button type="button" onClick={() => onCancel(row.streamId)}>
-                    Cancel
-                  </button>
-                ) : null}
-              </div>
-            </td>
-          </tr>
+          <StreamTableRow
+            key={row.key}
+            row={row}
+            onRemove={onRemove}
+            onBringBack={onBringBack}
+            onPin={onPin}
+            onUnpin={onUnpin}
+            onPush={onPush}
+            onCancel={onCancel}
+          />
         ))}
-      </tbody>
-    </table>
+      </Table>
+    </Card>
   );
-}
-
-function rowClass(row: StreamRowVm): string {
-  if (row.dirty) {
-    return styles.yellow;
-  }
-
-  if (row.deleted) {
-    return styles.gray;
-  }
-
-  return '';
-}
-
-function submitPin(
-  event: FormEvent<HTMLFormElement>,
-  bindingId: number,
-  onPin: (bindingId: number, share: string) => void,
-) {
-  event.preventDefault();
-
-  const share = String(new FormData(event.currentTarget).get('share') ?? '').trim();
-  onPin(bindingId, share);
-}
+});

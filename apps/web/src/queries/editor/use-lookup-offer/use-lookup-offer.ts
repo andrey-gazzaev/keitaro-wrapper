@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { editorApi } from '@/dtos/api/editor/editor.api';
 import { editorKeys } from '../keys/keys';
@@ -6,12 +7,15 @@ import { editorKeys } from '../keys/keys';
 export function useLookupOffer(campaignId: number) {
   const client = useQueryClient();
 
-  async function lookup(offerId: number) {
-    return client.fetchQuery({
-      queryKey: [...editorKeys.detail(campaignId), 'offer', offerId] as const,
-      queryFn: () => editorApi.lookup(campaignId, offerId),
-    });
-  }
+  const lookup = useCallback(
+    (offerId: number) => {
+      return client.fetchQuery({
+        queryKey: [...editorKeys.detail(campaignId), 'offer', offerId] as const,
+        queryFn: () => editorApi.lookup(campaignId, offerId),
+      });
+    },
+    [client, campaignId],
+  );
 
   return { lookup };
 }

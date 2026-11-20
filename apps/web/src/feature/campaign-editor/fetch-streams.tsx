@@ -1,3 +1,6 @@
+import { memo } from 'react';
+import { Button } from '@/ui';
+
 type FetchStreamsProps = {
   /** True while the import is in flight. */
   readonly pending: boolean;
@@ -7,10 +10,10 @@ type FetchStreamsProps = {
 };
 
 /** Button that imports this campaign's flows. */
-export function FetchStreams({ pending, onFetch }: FetchStreamsProps) {
+export const FetchStreams = memo(function FetchStreams({ pending, onFetch }: FetchStreamsProps) {
   return (
-    <button type="button" onClick={onFetch} disabled={pending}>
-      Fetch streams from KT
-    </button>
+    <Button variant="secondary" disabled={pending} onClick={onFetch}>
+      Fetch Streams
+    </Button>
   );
-}
+});

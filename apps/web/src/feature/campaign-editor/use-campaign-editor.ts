@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import { mapCampaignEditor } from '@/mappers';
 import {
   useAddOffer,
@@ -25,45 +26,69 @@ export function useCampaignEditor(campaignId: number) {
   const pushStream = usePushStream(campaignId);
   const cancelStream = useCancelStream(campaignId);
 
-  const view = mapCampaignEditor(editor.data);
+  const view = useMemo(() => mapCampaignEditor(editor.data), [editor.data]);
 
-  function fetchStreams() {
+  const fetchStreams = useCallback(() => {
     fetchStreamsMutation.mutate();
-  }
+  }, [fetchStreamsMutation.mutate]);
 
-  async function lookup(offerId: number) {
-    const offer = await offerLookup.lookup(offerId);
+  const lookup = useCallback(
+    async (offerId: number) => {
+      const offer = await offerLookup.lookup(offerId);
 
-    return offer.name;
-  }
+      return offer.name;
+    },
+    [offerLookup.lookup],
+  );
 
-  function add(streamId: number, offerId: number) {
-    addOffer.mutate({ streamId, offerId });
-  }
+  const add = useCallback(
+    (streamId: number, offerId: number) => {
+      addOffer.mutate({ streamId, offerId });
+    },
+    [addOffer.mutate],
+  );
 
-  function remove(bindingId: number) {
-    removeOffer.mutate(bindingId);
-  }
+  const remove = useCallback(
+    (bindingId: number) => {
+      removeOffer.mutate(bindingId);
+    },
+    [removeOffer.mutate],
+  );
 
-  function bringBack(bindingId: number) {
-    bringBackOffer.mutate(bindingId);
-  }
+  const bringBack = useCallback(
+    (bindingId: number) => {
+      bringBackOffer.mutate(bindingId);
+    },
+    [bringBackOffer.mutate],
+  );
 
-  function pin(bindingId: number, share: string) {
-    pinOffer.mutate({ bindingId, share });
-  }
+  const pin = useCallback(
+    (bindingId: number, share: string) => {
+      pinOffer.mutate({ bindingId, share });
+    },
+    [pinOffer.mutate],
+  );
 
-  function unpin(bindingId: number) {
-    unpinOffer.mutate(bindingId);
-  }
+  const unpin = useCallback(
+    (bindingId: number) => {
+      unpinOffer.mutate(bindingId);
+    },
+    [unpinOffer.mutate],
+  );
 
-  function push(streamId: number) {
-    pushStream.mutate(streamId);
-  }
+  const push = useCallback(
+    (streamId: number) => {
+      pushStream.mutate(streamId);
+    },
+    [pushStream.mutate],
+  );
 
-  function cancel(streamId: number) {
-    cancelStream.mutate(streamId);
-  }
+  const cancel = useCallback(
+    (streamId: number) => {
+      cancelStream.mutate(streamId);
+    },
+    [cancelStream.mutate],
+  );
 
   return {
     loading: editor.isLoading,

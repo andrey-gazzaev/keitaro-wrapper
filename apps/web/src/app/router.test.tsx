@@ -55,22 +55,22 @@ describe('routes', () => {
 
     renderAt('/');
 
-    await user.click(await screen.findByRole('link', { name: '«Spring»' }));
+    await user.click(await screen.findByRole('link', { name: 'Открыть' }));
 
-    expect(screen.queryByRole('heading', { name: 'Keitaro' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Fetch streams from KT' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Кампании' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Fetch Streams' })).toBeInTheDocument();
   });
 
   it('shows the home page for an unknown address', async () => {
     renderAt('/missing');
 
-    expect(await screen.findByRole('heading', { name: 'Keitaro' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Кампании' })).toBeInTheDocument();
   });
 
   it('shows the home page when the campaign id is not a positive integer', async () => {
     renderAt('/campaigns/0');
 
-    expect(await screen.findByRole('heading', { name: 'Keitaro' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Fetch streams from KT' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Кампании' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Fetch Streams' })).not.toBeInTheDocument();
   });
 });

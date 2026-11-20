@@ -1,4 +1,6 @@
-import { Stack } from '@/ui';
+import { memo, useMemo } from 'react';
+import { useCampaignTitle } from '@/hooks';
+import { PageHead } from '@/ui';
 import { FetchStreams } from './fetch-streams';
 import { StreamAdd } from './stream-add';
 import { StreamTable } from './stream-table';
@@ -10,12 +12,18 @@ type CampaignEditorProps = {
 };
 
 /** Streams, shares, and the controls that change them. */
-export function CampaignEditor({ campaignId }: CampaignEditorProps) {
+export const CampaignEditor = memo(function CampaignEditor({ campaignId }: CampaignEditorProps) {
   const editor = useCampaignEditor(campaignId);
+  const title = useCampaignTitle(campaignId);
+
+  const actions = useMemo(
+    () => <FetchStreams pending={editor.fetching} onFetch={editor.fetchStreams} />,
+    [editor.fetching, editor.fetchStreams],
+  );
 
   return (
-    <Stack as="section" variant="start">
-      <FetchStreams pending={editor.fetching} onFetch={editor.fetchStreams} />
+    <>
+      <PageHead title={title} actions={actions} />
 
       {editor.loading ? <p className="muted">Загрузка…</p> : null}
 
@@ -34,6 +42,6 @@ export function CampaignEditor({ campaignId }: CampaignEditorProps) {
       <StreamAdd targets={editor.targets} onLookup={editor.lookup} onAdd={editor.add} />
 
       {editor.actionFailed ? <p className="status">Не удалось сохранить правку.</p> : null}
-    </Stack>
+    </>
   );
-}
+});

@@ -1,41 +1,30 @@
-.table {
-  width: 100%;
-  border-collapse: collapse;
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
 }
 
-.table th,
-.table td {
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--line);
-  text-align: left;
-  vertical-align: top;
-}
-
-.yellow {
-  background: #f6e7a2;
-}
-
-.gray {
-  color: var(--muted);
-  background: #ece7df;
-}
-
-.actions {
+.row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.add {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 12px;
   align-items: end;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+.slot {
+  width: 220px;
+}
+
+.found {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 13px;
+  font-weight: 600;
 }
