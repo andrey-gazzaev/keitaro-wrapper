@@ -4,6 +4,7 @@ import os
 from datetime import UTC, datetime
 
 import httpx
+from fastapi import status
 
 from app.campaigns.models.offer import Offer
 from app.campaigns.models.offer_remote import OfferRemote
@@ -146,24 +147,24 @@ def _scripted(request: httpx.Request) -> httpx.Response:
     path = request.url.path
 
     if path.endswith("/campaigns/5/streams"):
-        return httpx.Response(200, json=[{"id": 9, "name": "Offer", "schema": "landings"}])
+        return httpx.Response(status.HTTP_200_OK, json=[{"id": 9, "name": "Offer", "schema": "landings"}])
 
     if path.endswith("/campaigns/6/streams"):
-        return httpx.Response(200, json=[{"id": 10, "name": "Offer", "position": None}])
+        return httpx.Response(status.HTTP_200_OK, json=[{"id": 10, "name": "Offer", "position": None}])
 
     if path.endswith("/campaigns/8/streams"):
-        return httpx.Response(200, json=[{"id": 12, "name": "Offer", "position": "nope"}])
+        return httpx.Response(status.HTTP_200_OK, json=[{"id": 12, "name": "Offer", "position": "nope"}])
 
     if path.endswith("/offers/7"):
-        return httpx.Response(200, json={"id": 7, "name": "Alpha"})
+        return httpx.Response(status.HTTP_200_OK, json={"id": 7, "name": "Alpha"})
 
     if path.endswith("/offers/10"):
-        return httpx.Response(200, json={"id": 99, "name": "Other"})
+        return httpx.Response(status.HTTP_200_OK, json={"id": 99, "name": "Other"})
 
     if path.endswith("/offers/8"):
-        return httpx.Response(200, json={"name": "Alpha"})
+        return httpx.Response(status.HTTP_200_OK, json={"name": "Alpha"})
 
     if path.endswith("/offers/9"):
-        return httpx.Response(200, json=["nope"])
+        return httpx.Response(status.HTTP_200_OK, json=["nope"])
 
-    return httpx.Response(404)
+    return httpx.Response(status.HTTP_404_NOT_FOUND)

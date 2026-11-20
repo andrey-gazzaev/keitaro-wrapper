@@ -5,7 +5,7 @@ from collections.abc import Generator
 from typing import Annotated
 
 import httpx
-from fastapi import Depends
+from fastapi import Depends, status
 
 from app.campaigns.models.campaign_remote import CampaignRemote
 from app.campaigns.models.filter_remote import FilterRemote
@@ -66,7 +66,7 @@ class KeitaroService:
         """Campaign fields, or none when Keitaro answers 404."""
         response = self._request("GET", f"/campaigns/{campaign_id}")
 
-        if response.status_code == 404:
+        if response.status_code == status.HTTP_404_NOT_FOUND:
             return None
 
         payload = self._json(self._raise_for_status(response))
@@ -133,10 +133,10 @@ class KeitaroService:
             raise KeitaroError("unavailable") from None
 
     def _raise_for_status(self, response: httpx.Response) -> httpx.Response:
-        if response.status_code == 404:
+        if response.status_code == status.HTTP_404_NOT_FOUND:
             raise KeitaroError("not_found")
 
-        if response.status_code >= 400:
+        if response.status_code >= status.HTTP_400_BAD_REQUEST:
             raise KeitaroError("unavailable")
 
         return response

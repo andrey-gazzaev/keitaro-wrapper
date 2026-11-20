@@ -6,6 +6,7 @@ from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
@@ -78,7 +79,7 @@ def _post(
         json={"name": _name() if name is None else name, "country": country, "offer_id": offer_id},
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_200_OK, response.text
 
     body = response.json()
     assert isinstance(body, dict)
@@ -181,7 +182,7 @@ def test_create_stores_one_row(http: TestClient, keitaro: FakeKeitaro) -> None:
     row = _row(campaign_id)
     listed = http.get("/campaigns")
 
-    assert listed.status_code == 200
+    assert listed.status_code == status.HTTP_200_OK
     assert listed.json() == [{"id": campaign_id, "name": _name(), "deleted": False}]
     assert row.name == _name()
     assert row.country == "US"
@@ -202,7 +203,7 @@ def test_empty_setup_is_conflict_and_stores_nothing(http: TestClient, keitaro: F
     keitaro.domains = []
     response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
-    assert response.status_code == 409
+    assert response.status_code == status.HTTP_409_CONFLICT
     assert keitaro.campaign_bodies == []
     assert _count() == 0
 
@@ -211,7 +212,7 @@ def test_missing_offer_is_not_found(http: TestClient, keitaro: FakeKeitaro) -> N
     keitaro.offers = set()
     response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
-    assert response.status_code == 404
+    assert response.status_code == status.HTTP_404_NOT_FOUND
     assert keitaro.campaign_bodies == []
     assert _count() == 0
 
@@ -220,7 +221,7 @@ def test_unconfigured_keitaro_is_unavailable(http: TestClient, keitaro: FakeKeit
     keitaro.setup_error = KeitaroError("not_configured")
     response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
-    assert response.status_code == 503
+    assert response.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
     assert _count() == 0
 
 
@@ -228,7 +229,7 @@ def test_keitaro_failure_during_create_stores_nothing(http: TestClient, keitaro:
     keitaro.stream_error = KeitaroError("unavailable")
     response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
-    assert response.status_code == 502
+    assert response.status_code == status.HTTP_502_BAD_GATEWAY
     assert keitaro.campaigns != {}
     assert _count() == 0
 
@@ -247,7 +248,7 @@ def test_invalid_campaign_is_rejected(http: TestClient, keitaro: FakeKeitaro) ->
     for payload in rejected:
         response = http.post("/campaigns", json=payload)
 
-        assert response.status_code == 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     assert keitaro.campaign_bodies == []
     assert _count() == 0
@@ -260,7 +261,7 @@ def test_sync_mismatch_sets_deleted_at_and_keeps_the_row(http: TestClient, keita
     response = http.post("/campaigns/sync")
     row = _row(campaign_id)
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == [{"id": campaign_id, "name": _name(), "deleted": True}]
     assert row.deleted_at is not None
     assert row.name == _name()
@@ -272,7 +273,7 @@ def test_sync_404_is_a_mismatch(http: TestClient, keitaro: FakeKeitaro) -> None:
     keitaro.campaign_overrides[campaign_id] = None
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()[0]["deleted"] is True
     assert ("streams", campaign_id) not in keitaro.reads
     assert _row(campaign_id).deleted_at is not None
@@ -284,7 +285,7 @@ def test_sync_deleted_state_is_a_mismatch(http: TestClient, keitaro: FakeKeitaro
     keitaro.campaign_overrides[campaign_id] = keitaro.echo(campaign_id, state="deleted")
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()[0]["deleted"] is True
 
 
@@ -294,7 +295,7 @@ def test_sync_match_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitar
     response = http.post("/campaigns/sync")
     row = _row(campaign_id)
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json() == [{"id": campaign_id, "name": _name(), "deleted": False}]
     assert row.deleted_at is None
     assert ("campaign", campaign_id) in keitaro.reads
@@ -307,7 +308,7 @@ def test_sync_disabled_campaign_still_matches(http: TestClient, keitaro: FakeKei
     keitaro.campaign_overrides[campaign_id] = keitaro.echo(campaign_id, state="disabled")
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()[0]["deleted"] is False
     assert _row(campaign_id).deleted_at is None
 
@@ -325,7 +326,7 @@ def test_sync_json_country_payload_matches(http: TestClient, keitaro: FakeKeitar
     ]
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()[0]["deleted"] is False
     assert row.country == "US"
 
@@ -339,7 +340,7 @@ def test_sync_error_tombstones_nothing(http: TestClient, keitaro: FakeKeitaro) -
     keitaro.campaign_errors.add(second_id)
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 502
+    assert response.status_code == status.HTTP_502_BAD_GATEWAY
     assert _row(first_id).deleted_at is None
     assert _row(second_id).deleted_at is None
 
@@ -362,7 +363,7 @@ def test_sync_offer_change_and_extra_stream_still_match(http: TestClient, keitar
     ]
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()[0]["deleted"] is False
     assert _row(campaign_id).deleted_at is None
 
@@ -373,7 +374,7 @@ def test_sync_stream_error_is_not_a_mismatch(http: TestClient, keitaro: FakeKeit
     keitaro.stream_errors.add(campaign_id)
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 502
+    assert response.status_code == status.HTTP_502_BAD_GATEWAY
     assert _row(campaign_id).deleted_at is None
 
 
@@ -391,7 +392,7 @@ def test_sync_skips_tombstones_and_returns_newest_first(http: TestClient, keitar
     _mark_deleted(current_id)
     response = http.post("/campaigns/sync")
 
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     assert [item["name"] for item in response.json()] == [
         _name("newer"),
         _name("current"),

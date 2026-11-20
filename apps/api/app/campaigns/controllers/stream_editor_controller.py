@@ -4,7 +4,7 @@ from collections.abc import Callable
 from decimal import Decimal
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.campaigns.dtos.offer_out_dto import OfferOutDto
 from app.campaigns.dtos.stream_editor_out_dto import StreamEditorOutDto
@@ -22,11 +22,11 @@ from app.campaigns.services.stream_editor_service import StreamEditorService, ge
 StreamEditorServiceDep = Annotated[StreamEditorService, Depends(get_stream_editor_service)]
 
 _STATUS = {
-    "not_found": 404,
-    "conflict": 409,
-    "invalid": 422,
-    "unavailable": 502,
-    "not_configured": 503,
+    "not_found": status.HTTP_404_NOT_FOUND,
+    "conflict": status.HTTP_409_CONFLICT,
+    "invalid": status.HTTP_422_UNPROCESSABLE_CONTENT,
+    "unavailable": status.HTTP_502_BAD_GATEWAY,
+    "not_configured": status.HTTP_503_SERVICE_UNAVAILABLE,
 }
 
 

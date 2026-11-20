@@ -5,6 +5,7 @@ from decimal import Decimal
 
 import httpx
 import pytest
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 
@@ -260,7 +261,7 @@ def test_pin_above_the_remainder_is_rejected(http: TestClient, keitaro: FakeKeit
     rejected = _pin(http, int(lines[1]["id"]), "50")
     current = _lines(_stream(_ok(http.get("/campaigns/100/editor")), "Offer"))
 
-    assert rejected.status_code == 422
+    assert rejected.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
     assert [(line["share"], line["pinned"]) for line in current] == [("60.00", True), ("40.00", False)]
 
 
@@ -277,7 +278,7 @@ def test_pin_that_rounds_a_share_below_zero_is_rejected(http: TestClient, keitar
     rejected = _pin(http, int(first["id"]), "99.98")
     current = _lines(_stream(_ok(http.get("/campaigns/100/editor")), "Offer"))
 
-    assert rejected.status_code == 422
+    assert rejected.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
     assert [(line["share"], line["pinned"]) for line in current] == [("20.00", False)] * 5
 
 
@@ -287,7 +288,7 @@ def test_invalid_pin_share_is_rejected(http: TestClient) -> None:
     for share in ("25.555", "-1", "100.001", "101"):
         response = _pin(http, 1, share)
 
-        assert response.status_code == 422
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
 
 def test_add_conflicts(http: TestClient, keitaro: FakeKeitaro) -> None:
@@ -298,14 +299,14 @@ def test_add_conflicts(http: TestClient, keitaro: FakeKeitaro) -> None:
     binding = _lines(_stream(_ok(http.get("/campaigns/100/editor")), "Offer"))[-1]
     _ok(_remove(http, int(binding["id"])))
 
-    assert _add(http, 200, 4).status_code == 409
-    assert _add(http, 201, 4).status_code == 409
-    assert _add(http, 201, 8).status_code == 404
+    assert _add(http, 200, 4).status_code == status.HTTP_409_CONFLICT
+    assert _add(http, 201, 4).status_code == status.HTTP_409_CONFLICT
+    assert _add(http, 201, 8).status_code == status.HTTP_404_NOT_FOUND
 
     keitaro.streams[100] = [remote_stream(200, name="Country", position=1, flow_schema="redirect")]
     _ok(http.post("/campaigns/100/editor/fetch"))
 
-    assert _add(http, 201, 1).status_code == 409
+    assert _add(http, 201, 1).status_code == status.HTTP_409_CONFLICT
 
 
 def test_live_and_deleted_commands_conflict(http: TestClient, keitaro: FakeKeitaro) -> None:
@@ -315,9 +316,9 @@ def test_live_and_deleted_commands_conflict(http: TestClient, keitaro: FakeKeita
     removed = _ok(_remove(http, int(live["id"])))
     deleted = _lines(_stream(removed, "Offer"))[0]
 
-    assert _bring_back(http, int(_lines(_stream(removed, "Offer"))[1]["id"])).status_code == 409
-    assert _remove(http, int(deleted["id"])).status_code == 409
-    assert _pin(http, int(deleted["id"]), "10").status_code == 409
+    assert _bring_back(http, int(_lines(_stream(removed, "Offer"))[1]["id"])).status_code == status.HTTP_409_CONFLICT
+    assert _remove(http, int(deleted["id"])).status_code == status.HTTP_409_CONFLICT
+    assert _pin(http, int(deleted["id"]), "10").status_code == status.HTTP_409_CONFLICT
 
     _ok(http.post("/campaigns/100/editor/streams/201/push"))
     keitaro.streams[100] = []
@@ -325,20 +326,20 @@ def test_live_and_deleted_commands_conflict(http: TestClient, keitaro: FakeKeita
     archived_line = _lines(_stream(archived, "Offer"))[0]
     updates = len(keitaro.updates)
 
-    assert _bring_back(http, int(archived_line["id"])).status_code == 409
-    assert http.post("/campaigns/100/editor/streams/201/push").status_code == 409
+    assert _bring_back(http, int(archived_line["id"])).status_code == status.HTTP_409_CONFLICT
+    assert http.post("/campaigns/100/editor/streams/201/push").status_code == status.HTTP_409_CONFLICT
     assert len(keitaro.updates) == updates
 
 
 def test_missing_campaign_is_not_found(http: TestClient, keitaro: FakeKeitaro) -> None:
-    assert http.get("/campaigns/100/editor").status_code == 404
+    assert http.get("/campaigns/100/editor").status_code == status.HTTP_404_NOT_FOUND
 
     store_campaign(deleted=True)
     _landings(keitaro)
 
-    assert http.get("/campaigns/100/editor").status_code == 404
-    assert http.post("/campaigns/100/editor/fetch").status_code == 404
-    assert http.get("/campaigns/100/editor/available-offers/7").status_code == 404
+    assert http.get("/campaigns/100/editor").status_code == status.HTTP_404_NOT_FOUND
+    assert http.post("/campaigns/100/editor/fetch").status_code == status.HTTP_404_NOT_FOUND
+    assert http.get("/campaigns/100/editor/available-offers/7").status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_lookup_returns_the_offer(http: TestClient, keitaro: FakeKeitaro) -> None:
@@ -347,9 +348,9 @@ def test_lookup_returns_the_offer(http: TestClient, keitaro: FakeKeitaro) -> Non
     found = http.get("/campaigns/100/editor/available-offers/7")
     missing = http.get("/campaigns/100/editor/available-offers/8")
 
-    assert found.status_code == 200
+    assert found.status_code == status.HTTP_200_OK
     assert found.json() == {"id": 7, "name": "Alpha"}
-    assert missing.status_code == 404
+    assert missing.status_code == status.HTTP_404_NOT_FOUND
     assert ("offer", 7) in keitaro.reads
 
 
@@ -395,8 +396,8 @@ def test_keitaro_failures_use_the_existing_status(http: TestClient, keitaro: Fak
     keitaro.error = KeitaroError("not_configured")
     unconfigured = http.post("/campaigns/100/editor/fetch")
 
-    assert unavailable.status_code == 502
-    assert unconfigured.status_code == 503
+    assert unavailable.status_code == status.HTTP_502_BAD_GATEWAY
+    assert unconfigured.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
 
 
 def test_streams_follow_position_and_lines_follow_add_order(http: TestClient, keitaro: FakeKeitaro) -> None:
@@ -502,7 +503,7 @@ def _unpin(http: TestClient, binding_id: int) -> httpx.Response:
 
 
 def _ok(response: httpx.Response) -> dict[str, object]:
-    assert response.status_code == 200, response.text
+    assert response.status_code == status.HTTP_200_OK, response.text
     body = response.json()
     assert isinstance(body, dict)
 

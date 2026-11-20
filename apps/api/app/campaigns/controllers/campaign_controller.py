@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.campaigns.dtos.campaign_in_dto import CampaignInDto
 from app.campaigns.dtos.campaign_out_dto import CampaignOutDto
@@ -15,9 +15,9 @@ from app.campaigns.services.campaign_setup_error import CampaignSetupError
 CampaignServiceDep = Annotated[CampaignService, Depends(get_campaign_service)]
 
 _STATUS = {
-    "not_found": 404,
-    "unavailable": 502,
-    "not_configured": 503,
+    "not_found": status.HTTP_404_NOT_FOUND,
+    "unavailable": status.HTTP_502_BAD_GATEWAY,
+    "not_configured": status.HTTP_503_SERVICE_UNAVAILABLE,
 }
 
 
@@ -41,7 +41,7 @@ class CampaignController:
         except CampaignCallError as error:
             raise self._http_error(error) from None
         except CampaignSetupError:
-            raise HTTPException(status_code=409) from None
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT) from None
 
         return self._response(created)
 
