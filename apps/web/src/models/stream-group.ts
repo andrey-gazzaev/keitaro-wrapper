@@ -2,22 +2,22 @@ import type { StreamLine } from './stream-line';
 
 /** One stream and its offer rows. */
 export type StreamGroup = {
-  /** Keitaro stream id. */
+  /** Stream id. */
   readonly id: number;
 
-  /** Stream name. Empty when Keitaro sends no name. */
+  /** Stream name. Empty when the stream has no name. */
   readonly name: string;
 
   /** Order of this stream on the campaign. */
   readonly position: number;
 
-  /** True when this live landings stream can take an offer. */
+  /** True when an offer can be added to this stream. */
   readonly acceptsOffers: boolean;
 
-  /** True when Keitaro no longer returns this stream. */
+  /** True when this stream is gone from the campaign. */
   readonly deleted: boolean;
 
-  /** True when this stream has unpublished working changes. */
+  /** True when this stream's offers differ from the saved offers. */
   readonly dirty: boolean;
 
   /** Offer rows. Empty when the stream has no offers. */

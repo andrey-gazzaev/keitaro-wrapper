@@ -1,9 +1,9 @@
 /** Values the create form sends for one campaign. */
 export type CampaignDraft = {
-  /** Campaign name. Empty when the field is blank. */
+  /** Campaign name. Empty when no name is given. */
   readonly name: string;
 
-  /** Country code as typed. The server stores the uppercase form. */
+  /** Country code. */
   readonly country: string;
 
   /** Offer id in Keitaro. */

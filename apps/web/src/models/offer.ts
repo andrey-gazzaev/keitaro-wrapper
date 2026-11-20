@@ -3,6 +3,6 @@ export type Offer = {
   /** Keitaro offer id. */
   readonly id: number;
 
-  /** Offer name. Empty when Keitaro sends no name. */
+  /** Offer name. Empty when the offer has no name. */
   readonly name: string;
 };

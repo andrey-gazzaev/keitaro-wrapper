@@ -5,6 +5,6 @@ export type StreamEditor = {
   /** Keitaro campaign id. */
   readonly campaignId: number;
 
-  /** Streams in position order. Empty before the first fetch. */
+  /** Streams in position order. Empty when the campaign has no streams. */
   readonly streams: readonly StreamGroup[];
 };
