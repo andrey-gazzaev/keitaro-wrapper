@@ -1,0 +1,13 @@
+.menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  margin: 4px 0 0;
+  padding: 4px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+}

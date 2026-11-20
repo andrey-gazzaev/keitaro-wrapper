@@ -7,6 +7,6 @@ export function useSearchOffers(text: string) {
   return useQuery({
     queryKey: offerKeys.search(text),
     queryFn: () => offersApi.search(text),
-    enabled: text.trim() !== '',
+    enabled:() => text.trim() !== '',
   });
 }

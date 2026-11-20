@@ -1,10 +1,13 @@
-import { useState, type ChangeEvent, type ReactNode } from 'react';
+import { memo, useCallback, useState, type ChangeEvent } from 'react';
 import { mapOfferFieldError } from '@/mappers';
 import type { Offer } from '@/models';
 import { useSearchOffers } from '@/queries';
 import { Field, Input } from '@/ui';
+import { OfferSearchMenu } from './offer-search-menu';
 import styles from './offer-search.module.css';
 import { useDebounce } from './use-debounce';
+
+const NO_OFFERS: readonly Offer[] = [];
 
 type OfferSearchProps = {
   /** Message under the field. Empty when the choice is fine. */
@@ -15,59 +18,42 @@ type OfferSearchProps = {
 };
 
 /** Search field and up to ten matching offers. */
-export function OfferSearch({ error, onOffer }: OfferSearchProps) {
+export const OfferSearch = memo(function OfferSearch({ error, onOffer }: OfferSearchProps) {
   const [text, setText] = useState('');
   const [picked, setPicked] = useState<Offer | null>(null);
-  const needle = useDebounce(text.trim(), 300);
+  const [lookup, setLookup] = useState('');
+  const needle = useDebounce(lookup.trim(), 300);
   const search = useSearchOffers(needle);
 
   const trimmed = text.trim();
-  const settled = trimmed !== '' && trimmed === needle;
+  const settled = picked === null && trimmed !== '' && trimmed === needle;
   const failure = mapOfferFieldError(settled ? search.error : null);
   const inFlight = settled && search.isFetching;
-  const rows = settled && !inFlight && failure.offerId === '' && search.isSuccess ? (search.data ?? []) : [];
+  const offers =
+    settled && !inFlight && failure.offerId === '' && search.isSuccess ? (search.data ?? NO_OFFERS) : NO_OFFERS;
+  const empty = settled && search.isSuccess && offers.length === 0;
+  const pickedId = picked?.id ?? null;
 
-  const onText = (event: ChangeEvent<HTMLInputElement>) => {
-    setText(event.target.value);
-    setPicked(null);
-    onOffer(null);
-  };
+  const onText = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      const next = event.target.value;
 
-  const pick = (offer: Offer) => {
-    setPicked(offer);
-    onOffer(offer);
-  };
+      setText(next);
+      setLookup(next);
+      setPicked(null);
+      onOffer(null);
+    },
+    [onOffer],
+  );
 
-  let menuItem: ReactNode = null;
-
-  if (inFlight) {
-    menuItem = <li className={styles.status}>Поиск…</li>;
-  } else if (failure.offerId !== '') {
-    menuItem = <li className={styles.status}>{failure.offerId}</li>;
-  } else if (settled && search.isSuccess && rows.length === 0) {
-    menuItem = <li className={styles.status}>Ничего не найдено</li>;
-  } else if (rows.length > 0) {
-    menuItem = rows.map((offer) => (
-      <li key={offer.id}>
-        <button
-          type="button"
-          className={styles.option}
-          role="option"
-          aria-selected={picked?.id === offer.id}
-          onClick={() => pick(offer)}
-        >
-          {offer.id} {offer.name}
-        </button>
-      </li>
-    ));
-  }
-
-  const menu =
-    menuItem === null ? null : (
-      <ul className={styles.menu} role="listbox">
-        {menuItem}
-      </ul>
-    );
+  const pick = useCallback(
+    (offer: Offer) => {
+      setText(offer.name);
+      setPicked(offer);
+      onOffer(offer);
+    },
+    [onOffer],
+  );
 
   return (
     <div className={styles.search}>
@@ -75,9 +61,16 @@ export function OfferSearch({ error, onOffer }: OfferSearchProps) {
         <div className={styles.anchor}>
           <Input value={text} onChange={onText} />
 
-          {menu}
+          <OfferSearchMenu
+            inFlight={inFlight}
+            message={failure.offerId}
+            empty={empty}
+            offers={offers}
+            pickedId={pickedId}
+            onPick={pick}
+          />
         </div>
       </Field>
     </div>
   );
-}
+});
