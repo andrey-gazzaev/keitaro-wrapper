@@ -1,21 +1,17 @@
-.layer {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: rgba(29, 27, 32, 0.4);
-}
-
 .dialog {
   width: 440px;
-  max-width: 100%;
+  max-width: calc(100% - 48px);
+  margin: auto;
   padding: 32px;
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-modal);
   background: var(--surface);
+  color: inherit;
   box-shadow: var(--shadow);
+}
+
+.dialog::backdrop {
+  background: rgba(29, 27, 32, 0.4);
 }
 
 .dialog h2 {

@@ -1,4 +1,4 @@
-import { memo, useEffect, useEffectEvent, useId, type ReactNode } from 'react';
+import { memo, useEffectEvent, useId, useLayoutEffect, useRef, type MouseEvent, type ReactNode, type SyntheticEvent } from 'react';
 import styles from './modal.module.css';
 
 type ModalProps = {
@@ -18,37 +18,50 @@ type ModalProps = {
 /** Overlay dialog. A click on the backdrop or Escape closes it. */
 export const Modal = memo(function Modal({ title, description, children, onClose }: ModalProps) {
   const titleId = useId();
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const close = useEffectEvent(() => {
     onClose();
   });
 
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        close();
-      }
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current;
+
+    if (dialog === null || dialog.open) {
+      return;
     }
 
-    document.addEventListener('keydown', onKey);
+    dialog.showModal();
 
     return () => {
-      document.removeEventListener('keydown', onKey);
+      if (dialog.open) {
+        dialog.close();
+      }
     };
-  }, [close]);
+  }, []);
+
+  function onCancel(event: SyntheticEvent<HTMLDialogElement>) {
+    event.preventDefault();
+    close();
+  }
+
+  function onClick(event: MouseEvent<HTMLDialogElement>) {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const inside =
+      event.clientX >= bounds.left &&
+      event.clientX <= bounds.right &&
+      event.clientY >= bounds.top &&
+      event.clientY <= bounds.bottom;
+
+    if (!inside) {
+      close();
+    }
+  }
 
   return (
-    <div className={styles.layer} onClick={onClose} role="presentation">
-      <div
-        className={styles.dialog}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        onClick={(event) => event.stopPropagation()}
-      >
-        <h2 id={titleId}>{title}</h2>
-        {description ? <p className={styles.lead}>{description}</p> : null}
-        {children}
-      </div>
-    </div>
+    <dialog ref={dialogRef} className={styles.dialog} aria-labelledby={titleId} onCancel={onCancel} onClick={onClick}>
+      <h2 id={titleId}>{title}</h2>
+      {description ? <p className={styles.lead}>{description}</p> : null}
+      {children}
+    </dialog>
   );
 });
