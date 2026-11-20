@@ -2,10 +2,10 @@
 
 from alembic import context
 
-from app.campaigns.services.campaign_record import CampaignRecord
-from app.campaigns.services.offer_record import OfferRecord
-from app.campaigns.services.stream_offer_record import StreamOfferRecord
-from app.campaigns.services.stream_record import StreamRecord
+from app.campaigns.repositories.campaign_record import CampaignRecord
+from app.campaigns.repositories.offer_record import OfferRecord
+from app.campaigns.repositories.stream_offer_record import StreamOfferRecord
+from app.campaigns.repositories.stream_record import StreamRecord
 from app.db import Base
 
 

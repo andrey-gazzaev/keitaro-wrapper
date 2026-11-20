@@ -7,7 +7,7 @@ import httpx
 from app.campaigns.models.offer import Offer
 from app.campaigns.models.offer_remote import OfferRemote
 from app.campaigns.models.stream_remote import StreamRemote
-from app.campaigns.services.campaign_record import CampaignRecord
+from app.campaigns.repositories.campaign_record import CampaignRecord
 from app.campaigns.services.keitaro_error import KeitaroError
 from app.db import SessionLocal
 

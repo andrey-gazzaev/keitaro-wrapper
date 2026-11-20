@@ -4,7 +4,7 @@ import json
 
 from app.campaigns.models.campaign_remote import CampaignRemote
 from app.campaigns.models.stream_remote import StreamRemote
-from app.campaigns.services.campaign_record import CampaignRecord
+from app.campaigns.repositories.campaign_record import CampaignRecord
 from app.campaigns.services.campaign_stream_service import CampaignStreamService
 
 

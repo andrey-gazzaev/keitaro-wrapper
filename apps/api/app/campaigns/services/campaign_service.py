@@ -8,9 +8,9 @@ from sqlalchemy.orm import Session
 
 from app.campaigns.models.campaign import Campaign
 from app.campaigns.models.campaign_draft import CampaignDraft
+from app.campaigns.repositories.campaign_record import CampaignRecord
 from app.campaigns.services.campaign_call_error import CampaignCallError
 from app.campaigns.services.campaign_match_service import CampaignMatchService
-from app.campaigns.services.campaign_record import CampaignRecord
 from app.campaigns.services.campaign_setup_error import CampaignSetupError
 from app.campaigns.services.campaign_stream_service import CampaignStreamService
 from app.campaigns.services.keitaro_error import KeitaroError

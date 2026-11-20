@@ -9,12 +9,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 
 from app.campaigns.models.offer import Offer
-from app.campaigns.services.campaign_record import CampaignRecord
+from app.campaigns.repositories.campaign_record import CampaignRecord
 from app.campaigns.services.keitaro_error import KeitaroError
 from app.campaigns.services.keitaro_service import KeitaroService, get_keitaro
-from app.campaigns.services.offer_record import OfferRecord
-from app.campaigns.services.stream_offer_record import StreamOfferRecord
-from app.campaigns.services.stream_record import StreamRecord
+from app.campaigns.repositories.offer_record import OfferRecord
+from app.campaigns.repositories.stream_offer_record import StreamOfferRecord
+from app.campaigns.repositories.stream_record import StreamRecord
 from app.campaigns.tests.stream_editor_controller_mocks import (
     FakeKeitaro,
     ScriptedClient,

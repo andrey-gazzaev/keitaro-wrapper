@@ -12,13 +12,13 @@ from app.campaigns.models.stream_editor import StreamEditor
 from app.campaigns.models.stream_group import StreamGroup
 from app.campaigns.models.stream_line import StreamLine
 from app.campaigns.models.stream_remote import StreamRemote
-from app.campaigns.services.campaign_record import CampaignRecord
+from app.campaigns.repositories.campaign_record import CampaignRecord
+from app.campaigns.repositories.offer_record import OfferRecord
+from app.campaigns.repositories.stream_offer_record import StreamOfferRecord
+from app.campaigns.repositories.stream_record import StreamRecord
 from app.campaigns.services.keitaro_error import KeitaroError
 from app.campaigns.services.keitaro_service import KeitaroDep, KeitaroService
-from app.campaigns.services.offer_record import OfferRecord
 from app.campaigns.services.stream_editor_error import StreamEditorError
-from app.campaigns.services.stream_offer_record import StreamOfferRecord
-from app.campaigns.services.stream_record import StreamRecord
 from app.db import SessionDep
 
 _HUNDRED = Decimal("100")
