@@ -8,6 +8,7 @@
     "db:up": "bash scripts/db-up.sh",
     "db:down": "docker compose down",
     "dev:api": "bash scripts/api-local.sh",
-    "api:docker": "bash scripts/api-docker.sh"
+    "api:docker": "bash scripts/api-docker.sh",
+    "start": "bash scripts/start.sh"
   }
 }

@@ -17,26 +17,44 @@ services:
       retries: 30
 
   api:
-    profiles: ["api"]
-    env_file: .env
+    profiles: ["api", "app"]
+    env_file:
+      - .env
+      - .env.docker
     build:
       context: ./apps/api
     container_name: keitaro-api
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql+psycopg://keitaro:keitaro@postgres:5432/keitaro
     ports:
       - "8000:8000"
     healthcheck:
       test:
         [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+          "CMD-SHELL",
+          "python -c \"import os, urllib.request; urllib.request.urlopen(os.environ['API_HEALTH_URL'])\"",
         ]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  web:
+    profiles: ["app"]
+    build:
+      context: ./apps/web
+      args:
+        CAMPAIGN_PREFIX: ${CAMPAIGN_PREFIX}
+    container_name: keitaro-web
+    env_file:
+      - .env.docker
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null \"$$WEB_HEALTH_URL\""]
       interval: 2s
       timeout: 5s
       retries: 30
