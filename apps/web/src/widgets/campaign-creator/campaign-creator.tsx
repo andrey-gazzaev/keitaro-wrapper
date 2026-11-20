@@ -1,8 +1,8 @@
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { CampaignBoard } from '@/feature/campaign-board/campaign-board';
-import { CampaignSync } from '@/feature/campaign-board/campaign-sync';
 import { CreateCampaign } from '@/feature/create-campaign/create-campaign';
-import { Button, PageHead } from '@/ui';
+import { PageHead } from '@/ui';
+import { CampaignCreatorActions } from './campaign-creator-actions';
 
 const CAMPAIGNS_INTRO = 'Черновик живёт здесь. В Keitaro состав уходит только по Push.';
 
@@ -10,31 +10,19 @@ const CAMPAIGNS_INTRO = 'Черновик живёт здесь. В Keitaro со
 export const CampaignCreator = memo(function CampaignCreator() {
   const [open, setOpen] = useState(false);
 
-  const openCreate = useCallback(() => {
-    setOpen(true);
+  const toggleOpen = useCallback(() => {
+    setOpen((current) => !current);
   }, []);
-
-  const closeCreate = useCallback(() => {
-    setOpen(false);
-  }, []);
-
-  const actions = useMemo(
-    () => (
-      <>
-        <CampaignSync disabled={open} />
-        <Button variant="primary" disabled={open} onClick={openCreate}>
-          Создать кампанию
-        </Button>
-      </>
-    ),
-    [open, openCreate],
-  );
 
   return (
     <>
-      <PageHead title="Кампании" description={CAMPAIGNS_INTRO} actions={actions} />
+      <PageHead
+        title="Кампании"
+        description={CAMPAIGNS_INTRO}
+        actions={<CampaignCreatorActions open={open} onToggle={toggleOpen} />}
+      />
 
-      <CreateCampaign open={open} onClose={closeCreate} />
+      <CreateCampaign open={open} onClose={toggleOpen} />
 
       <CampaignBoard />
     </>

@@ -1,6 +1,6 @@
-import { memo } from 'react';
+import { memo, useCallback } from 'react';
+import { useSyncCampaigns } from '@/queries';
 import { Button } from '@/ui';
-import { useCampaignSync } from './use-campaign-sync';
 
 type CampaignSyncProps = {
   /** True while another dialog is covering the page. */
@@ -9,14 +9,18 @@ type CampaignSyncProps = {
 
 /** Button that reloads campaigns from Keitaro. */
 export const CampaignSync = memo(function CampaignSync({ disabled }: CampaignSyncProps) {
-  const { sync, pending, failed } = useCampaignSync();
+  const syncCampaigns = useSyncCampaigns();
+
+  const sync = useCallback(() => {
+    syncCampaigns.mutate();
+  }, [syncCampaigns.mutate]);
 
   return (
     <>
-      <Button variant="secondary" disabled={disabled || pending} onClick={sync}>
+      <Button variant="secondary" disabled={disabled || syncCampaigns.isPending} onClick={sync}>
         Синхронизировать
       </Button>
-      {failed ? <p className="status">Не удалось синхронизировать.</p> : null}
+      {syncCampaigns.isError ? <p className="status">Не удалось синхронизировать.</p> : null}
     </>
   );
 });
