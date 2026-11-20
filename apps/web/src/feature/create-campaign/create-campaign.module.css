@@ -1,5 +1,12 @@
-.field {
+.actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 12px;
+  font-weight: 500;
 }

@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HomePage } from './home-page';
+import { routes } from '@/app/router';
 
 const campaignApiMock = vi.hoisted(() => ({
   list: vi.fn(),
@@ -26,11 +26,11 @@ function renderPage() {
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
 
+  const router = createMemoryRouter(routes, { initialEntries: ['/'] });
+
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter>
-        <HomePage />
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   );
 }
@@ -50,10 +50,10 @@ describe('HomePage', () => {
   it('shows that the API is ready', async () => {
     renderPage();
 
-    expect(screen.getByRole('heading', { name: 'Keitaro' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Кампании' })).toBeInTheDocument();
     expect(await screen.findByText('API готов.')).toBeInTheDocument();
     expect(await screen.findByText('Кампаний пока нет.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Создать' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Создать кампанию' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Синхронизировать' })).toBeInTheDocument();
   });
 
@@ -63,7 +63,8 @@ describe('HomePage', () => {
     renderPage();
 
     await screen.findByText('Кампаний пока нет.');
-    await user.click(screen.getByRole('button', { name: 'Создать' }));
+    await user.click(screen.getByRole('button', { name: 'Создать кампанию' }));
+    await user.click(screen.getByRole('button', { name: /^Создать$/ }));
 
     expect(campaignApiMock.create).not.toHaveBeenCalled();
   });
@@ -75,10 +76,11 @@ describe('HomePage', () => {
     renderPage();
 
     await screen.findByText('Кампаний пока нет.');
+    await user.click(screen.getByRole('button', { name: 'Создать кампанию' }));
     await user.type(screen.getByLabelText('Название'), 'Spring');
     await user.type(screen.getByLabelText('Гео-код'), 'us');
     await user.type(screen.getByLabelText('Id оффера'), '7');
-    await user.click(screen.getByRole('button', { name: 'Создать' }));
+    await user.click(screen.getByRole('button', { name: /^Создать$/ }));
 
     expect(campaignApiMock.create).toHaveBeenCalledWith({
       name: 'Spring',
@@ -95,10 +97,10 @@ describe('HomePage', () => {
     campaignApiMock.sync.mockRejectedValue(new Error('down'));
     renderPage();
 
-    expect(await screen.findByText('«Spring»')).toBeInTheDocument();
+    expect(await screen.findByText('Spring')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Синхронизировать' }));
 
     expect(await screen.findByText('Не удалось синхронизировать.')).toBeInTheDocument();
-    expect(screen.getByText('«Spring»')).toBeInTheDocument();
+    expect(screen.getByText('Spring')).toBeInTheDocument();
   });
 });

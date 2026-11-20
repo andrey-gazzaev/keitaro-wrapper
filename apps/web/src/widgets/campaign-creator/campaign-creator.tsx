@@ -1,19 +1,42 @@
-import { ApiStatus } from '@/feature/api-status/api-status';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { CampaignBoard } from '@/feature/campaign-board/campaign-board';
+import { CampaignSync } from '@/feature/campaign-board/campaign-sync';
 import { CreateCampaign } from '@/feature/create-campaign/create-campaign';
-import { Stack } from '@/ui';
+import { Button, PageHead } from '@/ui';
 
-/** Health check, create form, and the board of stored campaigns. */
-export function CampaignCreator() {
+const CAMPAIGNS_INTRO = 'Черновик живёт здесь. В Keitaro состав уходит только по Push.';
+
+/** Page heading, create dialog, and the board of stored campaigns. */
+export const CampaignCreator = memo(function CampaignCreator() {
+  const [open, setOpen] = useState(false);
+
+  const openCreate = useCallback(() => {
+    setOpen(true);
+  }, []);
+
+  const closeCreate = useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  const actions = useMemo(
+    () => (
+      <>
+        <CampaignSync disabled={open} />
+        <Button variant="primary" disabled={open} onClick={openCreate}>
+          Создать кампанию
+        </Button>
+      </>
+    ),
+    [open, openCreate],
+  );
+
   return (
     <>
-      <ApiStatus />
+      <PageHead title="Кампании" description={CAMPAIGNS_INTRO} actions={actions} />
 
-      <Stack as="section">
-        <CreateCampaign />
+      <CreateCampaign open={open} onClose={closeCreate} />
 
-        <CampaignBoard />
-      </Stack>
+      <CampaignBoard />
     </>
   );
-}
+});
