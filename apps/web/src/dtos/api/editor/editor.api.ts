@@ -1,6 +1,8 @@
 import type { Offer, StreamEditor } from '@/models';
+import { readHttpFailure } from '../../http-failure';
 import { api } from '../../http';
 import { mapOffer } from '../../mappers/editor/map-offer';
+import { mapOfferLookupError } from '../../mappers/editor/map-offer-lookup-error';
 import { mapStreamEditor, mapStreamOfferAddDto } from '../../mappers/editor/map-stream-editor';
 import { offerSchema } from '../../schemas/editor/offer.schema';
 import { streamEditorSchema } from '../../schemas/editor/stream-editor.schema';
@@ -21,11 +23,21 @@ export class EditorApi {
     return mapStreamEditor(streamEditorSchema.parse(data));
   }
 
-  /** Offer name for this id. Rejects when Keitaro has no such offer. */
+  /** Offer for this id. Rejects when the offer cannot be read. */
   public async lookup(campaignId: number, offerId: number): Promise<Offer> {
-    const { data } = await api.get(`/campaigns/${campaignId}/editor/available-offers/${offerId}`);
+    try {
+      const { data } = await api.get(`/campaigns/${campaignId}/editor/available-offers/${offerId}`);
 
-    return mapOffer(offerSchema.parse(data));
+      return mapOffer(offerSchema.parse(data));
+    } catch (error) {
+      const failure = readHttpFailure(error);
+
+      if (failure === null) {
+        throw error;
+      }
+
+      throw mapOfferLookupError(failure);
+    }
   }
 
   /** Bind an offer to a stream and return the editor. */
