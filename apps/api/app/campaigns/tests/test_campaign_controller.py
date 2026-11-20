@@ -1,5 +1,6 @@
 """Campaign create, list, and sync."""
 
+import os
 import re
 from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
@@ -20,6 +21,19 @@ from app.main import app
 from app.schema import apply_schema
 
 _ALIAS = re.compile(r"c[0-9a-f]{12}")
+
+
+def _name(suffix: str = "campaign1") -> str:
+    return f"{os.environ['CAMPAIGN_PREFIX']}{suffix}"
+
+
+def _misspelled(suffix: str = "campaign1") -> tuple[str, str]:
+    prefix = os.environ["CAMPAIGN_PREFIX"]
+    first = prefix[0].swapcase() + prefix[1:]
+    pivot = min(5, len(prefix) - 1)
+    middle = prefix[:pivot] + prefix[pivot].swapcase() + prefix[pivot + 1 :]
+
+    return first + suffix, middle + suffix
 
 
 @pytest.fixture
@@ -55,13 +69,13 @@ def empty_campaigns() -> Iterator[None]:
 def _post(
     http: TestClient,
     *,
-    name: str = "test_gazzaev_campaign1",
+    name: str | None = None,
     country: str = "us",
     offer_id: int = 7,
 ) -> dict[str, object]:
     response = http.post(
         "/campaigns",
-        json={"name": name, "country": country, "offer_id": offer_id},
+        json={"name": _name() if name is None else name, "country": country, "offer_id": offer_id},
     )
 
     assert response.status_code == 200, response.text
@@ -90,20 +104,20 @@ def _set_created_at(campaign_id: int, when: datetime) -> None:
 
 
 def test_cc_01_campaign_uses_the_given_name(http: TestClient, keitaro: FakeKeitaro) -> None:
-    created = _post(http, name="  test_gazzaev_campaign1  ")
+    created = _post(http, name=f"  {_name()}  ")
     body = keitaro.campaign_bodies[0]
 
-    assert created["name"] == "test_gazzaev_campaign1"
-    assert body["name"] == "test_gazzaev_campaign1"
+    assert created["name"] == _name()
+    assert body["name"] == _name()
     assert body["type"] == "position"
     assert _ALIAS.fullmatch(str(body["alias"]))
 
 
 def test_bare_prefix_is_accepted(http: TestClient, keitaro: FakeKeitaro) -> None:
-    created = _post(http, name="test_gazzaev_")
+    created = _post(http, name=_name(""))
 
-    assert created["name"] == "test_gazzaev_"
-    assert keitaro.campaign_bodies[0]["name"] == "test_gazzaev_"
+    assert created["name"] == _name("")
+    assert keitaro.campaign_bodies[0]["name"] == _name("")
 
 
 def test_cc_02_country_stream_filters_the_country_and_opens_google(
@@ -161,15 +175,15 @@ def test_cc_06_campaign_uses_the_first_traffic_source(http: TestClient, keitaro:
 
 
 def test_create_stores_one_row(http: TestClient, keitaro: FakeKeitaro) -> None:
-    created = _post(http, name="  test_gazzaev_campaign1  ", country="us", offer_id=7)
+    created = _post(http, name=f"  {_name()}  ", country="us", offer_id=7)
     campaign_id = created["id"]
     assert isinstance(campaign_id, int)
     row = _row(campaign_id)
     listed = http.get("/campaigns")
 
     assert listed.status_code == 200
-    assert listed.json() == [{"id": campaign_id, "name": "test_gazzaev_campaign1", "deleted": False}]
-    assert row.name == "test_gazzaev_campaign1"
+    assert listed.json() == [{"id": campaign_id, "name": _name(), "deleted": False}]
+    assert row.name == _name()
     assert row.country == "US"
     assert row.offer_id == 7
     assert row.domain_id == 11
@@ -186,7 +200,7 @@ def test_create_stores_one_row(http: TestClient, keitaro: FakeKeitaro) -> None:
 
 def test_empty_setup_is_conflict_and_stores_nothing(http: TestClient, keitaro: FakeKeitaro) -> None:
     keitaro.domains = []
-    response = http.post("/campaigns", json={"name": "test_gazzaev_campaign1", "country": "US", "offer_id": 7})
+    response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
     assert response.status_code == 409
     assert keitaro.campaign_bodies == []
@@ -195,7 +209,7 @@ def test_empty_setup_is_conflict_and_stores_nothing(http: TestClient, keitaro: F
 
 def test_missing_offer_is_not_found(http: TestClient, keitaro: FakeKeitaro) -> None:
     keitaro.offers = set()
-    response = http.post("/campaigns", json={"name": "test_gazzaev_campaign1", "country": "US", "offer_id": 7})
+    response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
     assert response.status_code == 404
     assert keitaro.campaign_bodies == []
@@ -204,7 +218,7 @@ def test_missing_offer_is_not_found(http: TestClient, keitaro: FakeKeitaro) -> N
 
 def test_unconfigured_keitaro_is_unavailable(http: TestClient, keitaro: FakeKeitaro) -> None:
     keitaro.setup_error = KeitaroError("not_configured")
-    response = http.post("/campaigns", json={"name": "test_gazzaev_campaign1", "country": "US", "offer_id": 7})
+    response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
     assert response.status_code == 503
     assert _count() == 0
@@ -212,7 +226,7 @@ def test_unconfigured_keitaro_is_unavailable(http: TestClient, keitaro: FakeKeit
 
 def test_keitaro_failure_during_create_stores_nothing(http: TestClient, keitaro: FakeKeitaro) -> None:
     keitaro.stream_error = KeitaroError("unavailable")
-    response = http.post("/campaigns", json={"name": "test_gazzaev_campaign1", "country": "US", "offer_id": 7})
+    response = http.post("/campaigns", json={"name": _name(), "country": "US", "offer_id": 7})
 
     assert response.status_code == 502
     assert keitaro.campaigns != {}
@@ -223,11 +237,11 @@ def test_invalid_campaign_is_rejected(http: TestClient, keitaro: FakeKeitaro) ->
     rejected = [
         {"name": "   ", "country": "US", "offer_id": 7},
         {"name": "Spring", "country": "US", "offer_id": 7},
-        {"name": "Test_gazzaev_campaign1", "country": "US", "offer_id": 7},
-        {"name": "test_Gazzaev_campaign1", "country": "US", "offer_id": 7},
-        {"name": "test_gazzaev_campaign1", "country": "USA", "offer_id": 7},
-        {"name": "test_gazzaev_campaign1", "country": "U1", "offer_id": 7},
-        {"name": "test_gazzaev_campaign1", "country": "US", "offer_id": 0},
+        {"name": _misspelled()[0], "country": "US", "offer_id": 7},
+        {"name": _misspelled()[1], "country": "US", "offer_id": 7},
+        {"name": _name(), "country": "USA", "offer_id": 7},
+        {"name": _name(), "country": "U1", "offer_id": 7},
+        {"name": _name(), "country": "US", "offer_id": 0},
     ]
 
     for payload in rejected:
@@ -247,9 +261,9 @@ def test_sync_mismatch_sets_deleted_at_and_keeps_the_row(http: TestClient, keita
     row = _row(campaign_id)
 
     assert response.status_code == 200
-    assert response.json() == [{"id": campaign_id, "name": "test_gazzaev_campaign1", "deleted": True}]
+    assert response.json() == [{"id": campaign_id, "name": _name(), "deleted": True}]
     assert row.deleted_at is not None
-    assert row.name == "test_gazzaev_campaign1"
+    assert row.name == _name()
 
 
 def test_sync_404_is_a_mismatch(http: TestClient, keitaro: FakeKeitaro) -> None:
@@ -281,7 +295,7 @@ def test_sync_match_leaves_deleted_at_null(http: TestClient, keitaro: FakeKeitar
     row = _row(campaign_id)
 
     assert response.status_code == 200
-    assert response.json() == [{"id": campaign_id, "name": "test_gazzaev_campaign1", "deleted": False}]
+    assert response.json() == [{"id": campaign_id, "name": _name(), "deleted": False}]
     assert row.deleted_at is None
     assert ("campaign", campaign_id) in keitaro.reads
     assert ("streams", campaign_id) in keitaro.reads
@@ -317,8 +331,8 @@ def test_sync_json_country_payload_matches(http: TestClient, keitaro: FakeKeitar
 
 
 def test_sync_error_tombstones_nothing(http: TestClient, keitaro: FakeKeitaro) -> None:
-    first = _post(http, name="test_gazzaev_first")
-    second = _post(http, name="test_gazzaev_second")
+    first = _post(http, name=_name("first"))
+    second = _post(http, name=_name("second"))
     first_id = int(first["id"])
     second_id = int(second["id"])
     keitaro.campaign_overrides[first_id] = None
@@ -364,9 +378,9 @@ def test_sync_stream_error_is_not_a_mismatch(http: TestClient, keitaro: FakeKeit
 
 
 def test_sync_skips_tombstones_and_returns_newest_first(http: TestClient, keitaro: FakeKeitaro) -> None:
-    older = _post(http, name="test_gazzaev_older")
-    current = _post(http, name="test_gazzaev_current")
-    newer = _post(http, name="test_gazzaev_newer")
+    older = _post(http, name=_name("older"))
+    current = _post(http, name=_name("current"))
+    newer = _post(http, name=_name("newer"))
     older_id = int(older["id"])
     current_id = int(current["id"])
     newer_id = int(newer["id"])
@@ -379,9 +393,9 @@ def test_sync_skips_tombstones_and_returns_newest_first(http: TestClient, keitar
 
     assert response.status_code == 200
     assert [item["name"] for item in response.json()] == [
-        "test_gazzaev_newer",
-        "test_gazzaev_current",
-        "test_gazzaev_older",
+        _name("newer"),
+        _name("current"),
+        _name("older"),
     ]
     assert response.json()[1]["deleted"] is True
     assert ("campaign", current_id) not in keitaro.reads

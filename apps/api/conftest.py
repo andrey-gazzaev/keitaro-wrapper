@@ -5,4 +5,8 @@ The running API always uses Postgres from Docker. Tests stay on SQLite so they d
 
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv(override=False)
+os.environ.setdefault("CAMPAIGN_PREFIX", "test_gazzaev_")
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"

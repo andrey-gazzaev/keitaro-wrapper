@@ -1,5 +1,6 @@
 """Fakes for stream editor controller tests."""
 
+import os
 from datetime import UTC, datetime
 
 import httpx
@@ -92,7 +93,7 @@ def store_campaign(campaign_id: int = 100, *, deleted: bool = False) -> int:
         session.add(
             CampaignRecord(
                 keitaro_id=campaign_id,
-                name="test_gazzaev_campaign1",
+                name=f"{os.environ['CAMPAIGN_PREFIX']}campaign1",
                 alias=f"c{campaign_id:012x}",
                 country="US",
                 offer_id=7,
