@@ -1,7 +1,7 @@
-import { memo, useCallback, type FormEvent, type ReactNode } from 'react';
+import { memo, useCallback, type FormEvent } from 'react';
 import type { StreamRowVm } from '@/view-models';
 import { Button, TableCell, TableRow } from '@/ui';
-import styles from './stream-table-row.module.css';
+import { StreamShareCell } from './stream-share-cell';
 
 type StreamTableRowProps = {
   /** Stream or offer line. */
@@ -66,12 +66,12 @@ export const StreamTableRow = memo(function StreamTableRow({
     [onPin, row.bindingId],
   );
 
-  const share = shareCell(row, submitPin, unpin);
-
   return (
     <TableRow tone={rowTone(row)}>
       <TableCell>{row.flow}</TableCell>
-      <TableCell align={row.header ? 'start' : 'end'}>{share}</TableCell>
+      <TableCell align={row.header ? 'start' : 'end'}>
+        <StreamShareCell row={row} onSubmit={submitPin} onUnpin={unpin} />
+      </TableCell>
       <TableCell muted>—</TableCell>
       <TableCell muted>—</TableCell>
       <TableCell>
@@ -110,37 +110,4 @@ function rowTone(row: StreamRowVm): 'plain' | 'draft' | 'removed' {
   }
 
   return 'plain';
-}
-
-function shareCell(
-  row: StreamRowVm,
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void,
-  onUnpin: () => void,
-): ReactNode {
-  if (row.pin) {
-    return (
-      <form className={styles.share} onSubmit={onSubmit}>
-        <input
-          name="share"
-          key={`${row.bindingId}-${row.share}`}
-          defaultValue={row.share}
-          aria-label={`Доля ${row.flow}`}
-        />
-        <Button type="submit" variant="secondary" size="sm">
-          Pin
-        </Button>
-        {row.pinned ? (
-          <Button type="button" variant="ghost" size="sm" onClick={onUnpin}>
-            Unpin
-          </Button>
-        ) : null}
-      </form>
-    );
-  }
-
-  if (row.header) {
-    return null;
-  }
-
-  return row.share;
 }

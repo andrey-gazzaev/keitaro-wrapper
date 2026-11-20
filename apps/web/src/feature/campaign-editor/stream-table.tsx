@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import type { StreamRowVm } from '@/view-models';
-import { Card, Table, TableCell, TableRow } from '@/ui';
+import { Card, Table } from '@/ui';
+import { StreamTableHead } from './stream-table-head';
 import { StreamTableRow } from './stream-table-row';
 
 type StreamTableProps = {
@@ -26,18 +27,6 @@ type StreamTableProps = {
   readonly onCancel: (streamId: number) => void;
 };
 
-const streamHead = (
-  <TableRow>
-    <TableCell header>Flow</TableCell>
-    <TableCell header align="end">
-      Share
-    </TableCell>
-    <TableCell header>Stats</TableCell>
-    <TableCell header>Trends</TableCell>
-    <TableCell header>Action</TableCell>
-  </TableRow>
-);
-
 /** Flows, shares, and the actions for one campaign. */
 export const StreamTable = memo(function StreamTable({
   rows,
@@ -50,7 +39,7 @@ export const StreamTable = memo(function StreamTable({
 }: StreamTableProps) {
   return (
     <Card>
-      <Table head={streamHead}>
+      <Table head={<StreamTableHead />}>
         {rows.map((row) => (
           <StreamTableRow
             key={row.key}

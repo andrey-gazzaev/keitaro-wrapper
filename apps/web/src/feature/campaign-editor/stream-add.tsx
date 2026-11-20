@@ -1,8 +1,10 @@
-import { memo, useCallback, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
-import axios from 'axios';
+import { memo, useCallback, useState, type ChangeEvent, type FormEvent } from 'react';
+import { mapOfferFieldError } from '@/mappers';
+import { Button, Field, Input } from '@/ui';
+import { positiveOfferId } from '@/utils';
 import type { StreamRowVm } from '@/view-models';
-import { Button, Field } from '@/ui';
-import styles from './campaign-editor.module.css';
+import { StreamSelect } from './stream-select';
+import styles from './stream-add.module.css';
 
 type StreamAddProps = {
   /** Live landings streams. Empty when none can take an offer. */
@@ -20,10 +22,11 @@ export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: S
   const [offerId, setOfferId] = useState('');
   const [streamId, setStreamId] = useState<number | null>(null);
   const [found, setFound] = useState('');
-  const [failure, setFailure] = useState('');
+  const [lookupError, setLookupError] = useState<unknown>(null);
 
   const known = targets.some((target) => target.streamId === streamId);
   const selected = known && streamId !== null ? streamId : (targets[0]?.streamId ?? null);
+  const failure = mapOfferFieldError(lookupError);
 
   const onOffer = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setOfferId(event.target.value);
@@ -46,32 +49,14 @@ export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: S
       try {
         const name = await onLookup(parsed);
         setFound(name);
-        setFailure('');
+        setLookupError(null);
         onAdd(selected, parsed);
       } catch (error) {
         setFound('');
-        setFailure(lookupFailure(error));
+        setLookupError(error);
       }
     },
     [offerId, selected, onLookup, onAdd],
-  );
-
-  const streamSelect = useMemo(
-    () => (
-      <select value={selected ?? ''} onChange={onStream} disabled={targets.length === 0}>
-        {targets.map((target) => (
-          <option key={target.streamId} value={target.streamId}>
-            {target.flow === '' ? target.streamId : target.flow}
-          </option>
-        ))}
-      </select>
-    ),
-    [targets, selected, onStream],
-  );
-
-  const offerInput = useMemo(
-    () => <input value={offerId} inputMode="numeric" placeholder="106" onChange={onOffer} />,
-    [offerId, onOffer],
   );
 
   return (
@@ -80,10 +65,14 @@ export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: S
 
       <div className={styles.row}>
         <div className={styles.slot}>
-          <Field label="Поток">{streamSelect}</Field>
+          <Field label="Поток">
+            <StreamSelect targets={targets} selected={selected} onStream={onStream} />
+          </Field>
         </div>
         <div className={styles.slot}>
-          <Field label="Id оффера">{offerInput}</Field>
+          <Field label="Id оффера" error={failure.offerId}>
+            <Input value={offerId} inputMode="numeric" placeholder="106" onChange={onOffer} />
+          </Field>
         </div>
         <Button type="submit" variant="primary" disabled={selected === null}>
           Add
@@ -91,26 +80,6 @@ export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: S
       </div>
 
       {found !== '' ? <p className={styles.found}>{found}</p> : null}
-
-      {failure !== '' ? <p className="status">{failure}</p> : null}
     </form>
   );
 });
-
-function positiveOfferId(value: string): number | null {
-  const trimmed = value.trim();
-
-  if (!/^[1-9]\d*$/.test(trimmed)) {
-    return null;
-  }
-
-  return Number(trimmed);
-}
-
-function lookupFailure(error: unknown): string {
-  if (axios.isAxiosError(error) && error.response?.status === 404) {
-    return 'Оффер не найден.';
-  }
-
-  return 'Keitaro не ответил.';
-}

@@ -1,10 +1,10 @@
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
+import { FetchStreamsButton } from '@/feature/campaign-editor/fetch-streams-button';
+import { StreamAdd } from '@/feature/campaign-editor/stream-add';
+import { StreamTable } from '@/feature/campaign-editor/stream-table';
+import { useCampaignEditor } from '@/feature/campaign-editor/use-campaign-editor';
 import { useCampaignTitle } from '@/hooks';
 import { PageHead } from '@/ui';
-import { FetchStreams } from './fetch-streams';
-import { StreamAdd } from './stream-add';
-import { StreamTable } from './stream-table';
-import { useCampaignEditor } from './use-campaign-editor';
 
 type CampaignEditorProps = {
   /** Keitaro campaign id from the path. */
@@ -16,14 +16,12 @@ export const CampaignEditor = memo(function CampaignEditor({ campaignId }: Campa
   const editor = useCampaignEditor(campaignId);
   const title = useCampaignTitle(campaignId);
 
-  const actions = useMemo(
-    () => <FetchStreams pending={editor.fetching} onFetch={editor.fetchStreams} />,
-    [editor.fetching, editor.fetchStreams],
-  );
-
   return (
     <>
-      <PageHead title={title} actions={actions} />
+      <PageHead
+        title={title}
+        actions={<FetchStreamsButton pending={editor.fetching} onFetch={editor.fetchStreams} />}
+      />
 
       {editor.loading ? <p className="muted">Загрузка…</p> : null}
 
