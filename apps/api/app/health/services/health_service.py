@@ -1,26 +1,23 @@
 """Read whether the database accepts a query."""
 
-from sqlalchemy import text
-from sqlalchemy.orm import Session
-
-from app.db import SessionDep
 from app.health.models.health import Health
+from app.health.repositories.health_repository import HealthRepository, HealthRepositoryDep
 
 
 class HealthService:
     """Whether the database accepts a query."""
 
-    def __init__(self, session: Session) -> None:
-        """A health service bound to one database session."""
-        self._session = session
+    def __init__(self, database: HealthRepository) -> None:
+        """A health service for one health repository."""
+        self._database = database
 
     def read(self) -> Health:
         """Reachability of the database. The status is ok when the query succeeds."""
-        self._session.execute(text("SELECT 1"))
+        self._database.ping()
 
         return Health(status="ok")
 
 
-def get_health_service(session: SessionDep) -> HealthService:
+def get_health_service(database: HealthRepositoryDep) -> HealthService:
     """Health service for one request."""
-    return HealthService(session)
+    return HealthService(database)
