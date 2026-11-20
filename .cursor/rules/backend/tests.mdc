@@ -6,9 +6,11 @@ alwaysApply: false
 
 # Tests
 
-Tests live in `tests/` at the root of the domain they cover, beside `dtos/`, `controllers/`, `models/`, and `services/`. A package that is not a feature, such as `app/schema`, keeps `tests/` at that package's root.
+Tests live in `tests/` at the root of the domain they cover, beside `dtos/`, `controllers/`, `models/`, `services/`, and `repositories/`. A package that is not a feature, such as `app/schema`, keeps `tests/` at that package's root.
 
 The test file is named for the entity it covers: `CampaignController` is `tests/test_campaign_controller.py`. Do not nest `tests/` inside a layer, and do not put the test in the entity's folder.
+
+Tests import each record from its own module and may use `SessionLocal` to arrange and assert. Production services and controllers use repositories for database access.
 
 Mocks, fakes, and canned responses live in a sibling file inside `tests/`, not in the test. `test_campaign_controller.py` imports them from `campaign_controller_mocks.py`. The test file keeps the cases.
 

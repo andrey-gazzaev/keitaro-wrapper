@@ -1,5 +1,5 @@
 ---
-description: A service or controller does one job; further work is a new entity
+description: A service, controller, or repository does one job; further work is a new entity
 globs: apps/api/app/**/*.py
 alwaysApply: false
 ---
@@ -8,7 +8,9 @@ alwaysApply: false
 
 A controller maps the request, calls a service, and maps the response. HTTP status belongs here. Domain rules do not.
 
-A service does one job. `CampaignService` stores and syncs campaign rows. Comparing a stored row with Keitaro is `CampaignMatchService`. The flow bodies are `CampaignStreamService`. The Admin API call is `KeitaroService`.
+A service does one job and does not take a session. `CampaignService` stores and syncs campaigns. Comparing a stored row with Keitaro is `CampaignMatchService`. The flow bodies are `CampaignStreamService`. The Admin API call is `KeitaroService`.
+
+A repository persists one table. It does not decide a match, a share split, a dirty flag, which rows are stale, an HTTP status, or a Keitaro call. `CampaignRepository` is the only writer of campaign rows. The stream, offer, and stream-offer repositories are the only writers of those tables. `HealthRepository` runs the reachability query. `HealthService` owns the ok status.
 
 When a method takes on a second job, that job is a new entity in its own file. A short private helper used only by that entity may stay.
 

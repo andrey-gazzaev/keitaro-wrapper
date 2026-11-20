@@ -8,6 +8,8 @@ alwaysApply: false
 
 One entity per file. A class, a domain model, a DTO, and an exception each get their own file. Name the file after the entity, in snake case: `CampaignService` lives in `campaign_service.py`.
 
+One entity is one class, and that class is the only class in the file. `CampaignRecord` and `CampaignRepository` are two files. `StreamRecord` and `StreamRepository`, `OfferRecord` and `OfferRepository`, and `StreamOfferRecord` and `StreamOfferRepository` are the same split. `HealthRepository` is the only class in its file, and health has no record class. `repositories/__init__.py` defines no class and does not re-export these classes. The function that builds the one repository instance stays in that repository's file. The existing allowance for test fakes in a mocks file does not allow a record and a repository to share a module.
+
 Private functions used only by that entity stay in its file. A second class is a new file. The module may construct the one instance it exports. Fakes for a test stay in the mocks file named by the tests rule.
 
 ```python
