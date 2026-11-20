@@ -1,12 +1,15 @@
 import { memo } from 'react';
-import { useApiStatus } from './use-api-status';
+import { mapApiStatus } from '@/mappers';
+import { useHealth } from '@/queries';
 import styles from './api-status.module.css';
 
 /** Health of the API, shown in the top bar. */
 export const ApiStatus = memo(function ApiStatus() {
-  const { status, isLoading, isError } = useApiStatus();
+  const health = useHealth();
 
-  if (isLoading) {
+  const status = health.data ? mapApiStatus(health.data) : null;
+
+  if (health.isLoading) {
     return (
       <p className={`${styles.pill} ${styles.loading}`}>
         <i className={styles.dot} />
@@ -15,7 +18,7 @@ export const ApiStatus = memo(function ApiStatus() {
     );
   }
 
-  if (isError || status == null) {
+  if (health.isError || status == null) {
     return (
       <p className={`${styles.pill} ${styles.down}`}>
         <i className={styles.dot} />
