@@ -7,6 +7,12 @@ import { CreateCampaignForm } from './create-campaign-form';
 
 const DIALOG_DESCRIPTION = 'Название, гео-код и id оффера. Домен, группа и источник проставятся из Keitaro.';
 
+const EMPTY_FIELD_ERRORS = {
+  name: '',
+  country: '',
+  offerId: '',
+};
+
 type CreateCampaignProps = {
   /** True while the dialog is open. */
   readonly open: boolean;
@@ -20,6 +26,7 @@ export const CreateCampaign = memo(function CreateCampaign({ open, onClose }: Cr
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
   const [offerId, setOfferId] = useState('');
+  const [fieldErrors, setFieldErrors] = useState(EMPTY_FIELD_ERRORS);
   const createCampaign = useCreateCampaign();
 
   const failure = mapCampaignFormError(createCampaign.isError ? createCampaign.error : null);
@@ -27,14 +34,17 @@ export const CreateCampaign = memo(function CreateCampaign({ open, onClose }: Cr
 
   const onName = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setName(event.target.value);
+    setFieldErrors((current) => ({ ...current, name: '' }));
   }, []);
 
   const onCountry = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setCountry(event.target.value);
+    setFieldErrors((current) => ({ ...current, country: '' }));
   }, []);
 
   const onOfferId = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setOfferId(event.target.value);
+    setFieldErrors((current) => ({ ...current, offerId: '' }));
   }, []);
 
   const submit = useCallback(
@@ -46,15 +56,31 @@ export const CreateCampaign = memo(function CreateCampaign({ open, onClose }: Cr
       const parsedOfferId = positiveOfferId(offerId);
 
       if (trimmedName === '' || trimmedCountry === '' || parsedOfferId === null) {
+        setFieldErrors({
+          name: trimmedName === '' ? 'Укажите название.' : '',
+          country: trimmedCountry === '' ? 'Укажите гео-код.' : '',
+          offerId: parsedOfferId === null ? 'Укажите id оффера.' : '',
+        });
+        createCampaign.reset();
+
         return;
       }
 
+      setFieldErrors(EMPTY_FIELD_ERRORS);
+
       createCampaign.mutate(
         { name: trimmedName, country: trimmedCountry, offerId: parsedOfferId },
-        { onSuccess: () => onClose() },
+        {
+          onSuccess: () => onClose(),
+          onError: (error) => {
+            const mapped = mapCampaignFormError(error);
+
+            setFieldErrors({ name: mapped.name, country: mapped.country, offerId: mapped.offerId });
+          },
+        },
       );
     },
-    [name, country, offerId, createCampaign.mutate, onClose],
+    [name, country, offerId, createCampaign.mutate, createCampaign.reset, onClose],
   );
 
   return (
@@ -67,9 +93,9 @@ export const CreateCampaign = memo(function CreateCampaign({ open, onClose }: Cr
             name={name}
             country={country}
             offerId={offerId}
-            nameError={failure.name}
-            countryError={failure.country}
-            offerError={failure.offerId}
+            nameError={fieldErrors.name}
+            countryError={fieldErrors.country}
+            offerError={fieldErrors.offerId}
             formError={failure.form}
             pending={createCampaign.isPending}
             onName={onName}

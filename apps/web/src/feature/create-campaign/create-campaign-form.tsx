@@ -68,13 +68,13 @@ export function CreateCampaignForm({
 }: CreateCampaignFormProps) {
   return (
     <Stack as="form" onSubmit={onSubmit}>
-      <Field label="Название" hint={NAME_HINT} error={nameError}>
+      <Field label="Название" hint={NAME_HINT} error={nameError} required>
         <Input value={name} placeholder={`${campaignPrefix}au`} onChange={onName} />
       </Field>
-      <Field label="Гео-код" hint={COUNTRY_HINT} error={countryError}>
+      <Field label="Гео-код" hint={COUNTRY_HINT} error={countryError} required>
         <Input value={country} placeholder="AU" onChange={onCountry} />
       </Field>
-      <Field label="Id оффера" hint={OFFER_HINT} error={offerError}>
+      <Field label="Id оффера" hint={OFFER_HINT} error={offerError} required>
         <Input value={offerId} inputMode="numeric" placeholder="104" onChange={onOfferId} />
       </Field>
 
