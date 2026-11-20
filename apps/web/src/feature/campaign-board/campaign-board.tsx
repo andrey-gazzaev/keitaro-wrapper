@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Stack } from '@/ui';
 import { useCampaignBoard } from './use-campaign-board';
 import styles from './campaign-board.module.css';
@@ -20,7 +21,7 @@ export function CampaignBoard() {
         <ul className={styles.rows}>
           {board.campaigns.map((campaign) => (
             <li key={campaign.id}>
-              {campaign.href === '' ? campaign.label : <a href={campaign.href}>{campaign.label}</a>}
+              {campaign.href === '' ? campaign.label : <Link to={campaign.href}>{campaign.label}</Link>}
             </li>
           ))}
         </ul>
