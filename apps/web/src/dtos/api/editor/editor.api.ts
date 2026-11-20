@@ -64,6 +64,13 @@ export class EditorApi {
     return mapStreamEditor(streamEditorSchema.parse(data));
   }
 
+  /** Restore one deleted stream and return the editor. */
+  public async bringBackStream(campaignId: number, streamId: number): Promise<StreamEditor> {
+    const { data } = await api.post(`/campaigns/${campaignId}/editor/streams/${streamId}/bring-back`);
+
+    return mapStreamEditor(streamEditorSchema.parse(data));
+  }
+
   /** Fix one offer's share and return the editor. */
   public async pin(campaignId: number, bindingId: number, share: string): Promise<StreamEditor> {
     const { data } = await api.post(`/campaigns/${campaignId}/editor/offers/${bindingId}/pin`, { share });

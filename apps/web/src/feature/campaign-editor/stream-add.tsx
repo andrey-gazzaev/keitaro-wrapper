@@ -10,6 +10,9 @@ type StreamAddProps = {
   /** Live landings streams. Empty when none can take an offer. */
   readonly targets: readonly StreamRowVm[];
 
+  /** True while the offer is being added. */
+  readonly adding: boolean;
+
   /** Offer name for this id. Rejects when the lookup fails. */
   readonly onLookup: (offerId: number) => Promise<string>;
 
@@ -18,18 +21,22 @@ type StreamAddProps = {
 };
 
 /** Landings stream, offer id, and the Add control. */
-export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: StreamAddProps) {
+export const StreamAdd = memo(function StreamAdd({ targets, adding, onLookup, onAdd }: StreamAddProps) {
   const [offerId, setOfferId] = useState('');
   const [streamId, setStreamId] = useState<number | null>(null);
   const [found, setFound] = useState('');
   const [lookupError, setLookupError] = useState<unknown>(null);
+  const [offerError, setOfferError] = useState('');
 
   const known = targets.some((target) => target.streamId === streamId);
   const selected = known && streamId !== null ? streamId : (targets[0]?.streamId ?? null);
   const failure = mapOfferFieldError(lookupError);
+  const offerMessage = offerError !== '' ? offerError : failure.offerId;
 
   const onOffer = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     setOfferId(event.target.value);
+    setOfferError('');
+    setLookupError(null);
   }, []);
 
   const onStream = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
@@ -42,9 +49,18 @@ export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: S
 
       const parsed = positiveOfferId(offerId);
 
-      if (parsed === null || selected === null) {
+      if (parsed === null) {
+        setOfferError('Укажите id оффера.');
+        setLookupError(null);
+
         return;
       }
+
+      if (selected === null) {
+        return;
+      }
+
+      setOfferError('');
 
       try {
         const name = await onLookup(parsed);
@@ -65,16 +81,16 @@ export const StreamAdd = memo(function StreamAdd({ targets, onLookup, onAdd }: S
 
       <div className={styles.row}>
         <div className={styles.slot}>
-          <Field label="Поток">
+          <Field label="Поток" required>
             <StreamSelect targets={targets} selected={selected} onStream={onStream} />
           </Field>
         </div>
         <div className={styles.slot}>
-          <Field label="Id оффера" error={failure.offerId}>
+          <Field label="Id оффера" required error={offerMessage}>
             <Input value={offerId} inputMode="numeric" placeholder="106" onChange={onOffer} />
           </Field>
         </div>
-        <Button type="submit" variant="primary" disabled={selected === null}>
+        <Button type="submit" variant="primary" disabled={selected === null} pending={adding}>
           Add
         </Button>
       </div>

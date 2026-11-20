@@ -3,6 +3,7 @@ export { useCreateCampaign } from './campaigns/use-create-campaign/use-create-ca
 export { useSyncCampaigns } from './campaigns/use-sync-campaigns/use-sync-campaigns';
 export { useAddOffer } from './editor/use-add-offer/use-add-offer';
 export { useBringBackOffer } from './editor/use-bring-back-offer/use-bring-back-offer';
+export { useBringBackStream } from './editor/use-bring-back-stream/use-bring-back-stream';
 export { useCancelStream } from './editor/use-cancel-stream/use-cancel-stream';
 export { useFetchStreams } from './editor/use-fetch-streams/use-fetch-streams';
 export { useLoadEditor } from './editor/use-load-editor/use-load-editor';

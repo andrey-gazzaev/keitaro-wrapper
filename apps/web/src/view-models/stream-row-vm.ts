@@ -12,7 +12,7 @@ export type StreamRowVm = {
   /** True when this offer's share is pinned. False on a stream row. */
   readonly pinned: boolean;
 
-  /** True when this offer row is removed. False on a stream row. */
+  /** True when this offer is removed, or when this stream row is inactive. */
   readonly deleted: boolean;
 
   /** True when the stream has unpublished changes and the row is yellow. */
@@ -24,7 +24,7 @@ export type StreamRowVm = {
   /** True when this stream can be chosen in the add control. False for other rows. */
   readonly selectable: boolean;
 
-  /** True when Bring back is shown for this deleted offer on a live stream. */
+  /** True when Bring back is shown for a removed offer on a live stream, or for an inactive stream row. */
   readonly bringBack: boolean;
 
   /** True when Remove is shown for this live offer. */
@@ -39,6 +39,6 @@ export type StreamRowVm = {
   /** Binding id for offer actions. Zero on a stream row, which has no binding. */
   readonly bindingId: number;
 
-  /** Stream id for push, cancel, and the add select. */
+  /** Stream id for bring back, push, cancel, and the add select. */
   readonly streamId: number;
 };

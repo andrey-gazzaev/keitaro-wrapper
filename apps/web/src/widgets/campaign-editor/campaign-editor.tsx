@@ -29,15 +29,17 @@ export const CampaignEditor = memo(function CampaignEditor({ campaignId }: Campa
 
       <StreamTable
         rows={editor.rows}
+        pending={editor.pending}
         onRemove={editor.remove}
         onBringBack={editor.bringBack}
+        onBringBackStream={editor.bringBackStream}
         onPin={editor.pin}
         onUnpin={editor.unpin}
         onPush={editor.push}
         onCancel={editor.cancel}
       />
 
-      <StreamAdd targets={editor.targets} onLookup={editor.lookup} onAdd={editor.add} />
+      <StreamAdd targets={editor.targets} adding={editor.adding} onLookup={editor.lookup} onAdd={editor.add} />
 
       {editor.actionFailed ? <p className="status">Не удалось сохранить правку.</p> : null}
     </>
