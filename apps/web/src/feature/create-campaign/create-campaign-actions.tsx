@@ -16,7 +16,7 @@ export function CreateCampaignActions({ pending, onClose }: CreateCampaignAction
       <Button type="button" variant="secondary" onClick={onClose}>
         Отмена
       </Button>
-      <Button type="submit" variant="primary" disabled={pending}>
+      <Button type="submit" variant="primary" pending={pending}>
         Создать
       </Button>
     </div>

@@ -17,7 +17,7 @@ export const CampaignSync = memo(function CampaignSync({ disabled }: CampaignSyn
 
   return (
     <>
-      <Button variant="secondary" disabled={disabled || syncCampaigns.isPending} onClick={sync}>
+      <Button variant="secondary" pending={syncCampaigns.isPending} disabled={disabled} onClick={sync}>
         Синхронизировать
       </Button>
       {syncCampaigns.isError ? <p className="status">Не удалось синхронизировать.</p> : null}

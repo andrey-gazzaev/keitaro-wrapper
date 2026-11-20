@@ -12,7 +12,7 @@ type FetchStreamsButtonProps = {
 /** Button that imports this campaign's flows. */
 export const FetchStreamsButton = memo(function FetchStreamsButton({ pending, onFetch }: FetchStreamsButtonProps) {
   return (
-    <Button variant="secondary" disabled={pending} onClick={onFetch}>
+    <Button variant="secondary" pending={pending} onClick={onFetch}>
       Fetch Streams
     </Button>
   );
