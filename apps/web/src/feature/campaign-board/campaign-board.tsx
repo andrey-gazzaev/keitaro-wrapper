@@ -1,37 +1,61 @@
+import { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Stack } from '@/ui';
+import { Card, Chip, Table, TableCell, TableRow } from '@/ui';
 import { useCampaignBoard } from './use-campaign-board';
 import styles from './campaign-board.module.css';
 
-/** Stored campaigns and the control that syncs them. */
-export function CampaignBoard() {
-  const board = useCampaignBoard();
+const campaignHead = (
+  <TableRow>
+    <TableCell header>Кампания</TableCell>
+    <TableCell header>Id</TableCell>
+    <TableCell header />
+  </TableRow>
+);
+
+/** Stored campaigns. */
+export const CampaignBoard = memo(function CampaignBoard() {
+  const { campaigns, isLoading, isError } = useCampaignBoard();
+
+  const table = useMemo(
+    () => (
+      <Card>
+        <Table head={campaignHead}>
+          {campaigns.map((campaign) => (
+            <TableRow key={campaign.id}>
+              <TableCell>
+                {campaign.name}
+                {campaign.deleted ? (
+                  <>
+                    {' '}
+                    <Chip tone="neutral">удалена</Chip>
+                  </>
+                ) : null}
+              </TableCell>
+              <TableCell align="end">{campaign.id}</TableCell>
+              <TableCell>
+                {campaign.href === '' ? null : (
+                  <Link className={styles.open} to={campaign.href}>
+                    Открыть
+                  </Link>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </Table>
+      </Card>
+    ),
+    [campaigns],
+  );
 
   return (
-    <Stack as="section" variant="start">
-      {board.isLoading ? <p className="muted">Загрузка…</p> : null}
+    <>
+      {isLoading ? <p className="muted">Загрузка…</p> : null}
 
-      {board.isError ? <p className="status">Не удалось загрузить кампании.</p> : null}
+      {isError ? <p className="status">Не удалось загрузить кампании.</p> : null}
 
-      {!board.isLoading && !board.isError && board.campaigns.length === 0 ? (
-        <p>Кампаний пока нет.</p>
-      ) : null}
+      {!isLoading && !isError && campaigns.length === 0 ? <p>Кампаний пока нет.</p> : null}
 
-      {board.campaigns.length > 0 ? (
-        <ul className={styles.rows}>
-          {board.campaigns.map((campaign) => (
-            <li key={campaign.id}>
-              {campaign.href === '' ? campaign.label : <Link to={campaign.href}>{campaign.label}</Link>}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      <button type="button" onClick={board.sync} disabled={board.syncing}>
-        Синхронизировать
-      </button>
-
-      {board.syncFailed ? <p className="status">Не удалось синхронизировать.</p> : null}
-    </Stack>
+      {campaigns.length > 0 ? table : null}
+    </>
   );
-}
+});
