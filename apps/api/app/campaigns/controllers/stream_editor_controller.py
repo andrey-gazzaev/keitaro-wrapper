@@ -6,13 +6,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.campaigns.dtos.offer_out_dto import OfferOutDto
 from app.campaigns.dtos.stream_editor_out_dto import StreamEditorOutDto
 from app.campaigns.dtos.stream_group_out_dto import StreamGroupOutDto
 from app.campaigns.dtos.stream_line_out_dto import StreamLineOutDto
 from app.campaigns.dtos.stream_offer_add_in_dto import StreamOfferAddInDto
 from app.campaigns.dtos.stream_offer_pin_in_dto import StreamOfferPinInDto
-from app.campaigns.models.offer import Offer
 from app.campaigns.models.stream_editor import StreamEditor
 from app.campaigns.models.stream_group import StreamGroup
 from app.campaigns.models.stream_line import StreamLine
@@ -41,7 +39,6 @@ class StreamEditorController:
         self.router = APIRouter(prefix="/campaigns", tags=["campaigns"])
         self.router.get("/{campaign_id}/editor")(self.show_editor)
         self.router.post("/{campaign_id}/editor/fetch")(self.fetch_editor)
-        self.router.get("/{campaign_id}/editor/available-offers/{offer_id}")(self.available_offer)
         self.router.post("/{campaign_id}/editor/offers")(self.add_offer)
         self.router.post("/{campaign_id}/editor/offers/{binding_id}/remove")(self.remove_offer)
         self.router.post("/{campaign_id}/editor/offers/{binding_id}/bring-back")(self.bring_back_offer)
@@ -58,15 +55,6 @@ class StreamEditorController:
     def fetch_editor(self, campaign_id: int, editor: StreamEditorServiceDep) -> StreamEditorOutDto:
         """Import this campaign's flows and return the editor."""
         return self._call(lambda: editor.fetch(campaign_id))
-
-    def available_offer(self, campaign_id: int, offer_id: int, editor: StreamEditorServiceDep) -> OfferOutDto:
-        """The Keitaro offer the operator can add."""
-        try:
-            found = editor.find_offer(campaign_id, offer_id)
-        except StreamEditorError as error:
-            raise self._http_error(error) from None
-
-        return self._offer(found)
 
     def add_offer(
         self,
@@ -175,9 +163,6 @@ class StreamEditorController:
             pinned=line.pinned,
             deleted=line.deleted,
         )
-
-    def _offer(self, offer: Offer) -> OfferOutDto:
-        return OfferOutDto(id=offer.id, name=offer.name)
 
     def _http_error(self, error: StreamEditorError) -> HTTPException:
         return HTTPException(status_code=_STATUS[error.kind])

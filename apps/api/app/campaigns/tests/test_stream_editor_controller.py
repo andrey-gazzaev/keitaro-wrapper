@@ -370,19 +370,6 @@ def test_missing_campaign_is_not_found(http: TestClient, keitaro: FakeKeitaro) -
 
     assert http.get("/campaigns/100/editor").status_code == status.HTTP_404_NOT_FOUND
     assert http.post("/campaigns/100/editor/fetch").status_code == status.HTTP_404_NOT_FOUND
-    assert http.get("/campaigns/100/editor/available-offers/7").status_code == status.HTTP_404_NOT_FOUND
-
-
-def test_lookup_returns_the_offer(http: TestClient, keitaro: FakeKeitaro) -> None:
-    store_campaign()
-    keitaro.offers[7] = "Alpha"
-    found = http.get("/campaigns/100/editor/available-offers/7")
-    missing = http.get("/campaigns/100/editor/available-offers/8")
-
-    assert found.status_code == status.HTTP_200_OK
-    assert found.json() == {"id": 7, "name": "Alpha"}
-    assert missing.status_code == status.HTTP_404_NOT_FOUND
-    assert ("offer", 7) in keitaro.reads
 
 
 def test_push_replaces_offers_only(http: TestClient, keitaro: FakeKeitaro) -> None:

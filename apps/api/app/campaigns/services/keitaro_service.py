@@ -94,6 +94,15 @@ class KeitaroService:
 
         return [_stream(item) for item in payload]
 
+    def list_offers(self) -> list[Offer]:
+        """Every offer on this tracker, in Keitaro order. Empty when the tracker has none."""
+        payload = self._json(self._raise_for_status(self._request("GET", "/offers")))
+
+        if not isinstance(payload, list):
+            raise KeitaroError("unavailable")
+
+        return [_listed_offer(item) for item in payload]
+
     def get_offer(self, offer_id: int) -> Offer:
         """The offer for this id. A missing offer raises not_found."""
         payload = self._json(self._raise_for_status(self._request("GET", f"/offers/{offer_id}")))
@@ -202,6 +211,18 @@ def _campaign_remote(payload: object) -> CampaignRemote:
         group_id=whole(payload.get("group_id")),
         traffic_source_id=whole(payload.get("traffic_source_id")),
     )
+
+
+def _listed_offer(payload: object) -> Offer:
+    if not isinstance(payload, dict):
+        raise KeitaroError("unavailable")
+
+    offer_id = whole(payload.get("id"))
+
+    if offer_id is None:
+        raise KeitaroError("unavailable")
+
+    return Offer(id=offer_id, name=text(payload.get("name")))
 
 
 def _resource_id(payload: object) -> int:

@@ -54,15 +54,6 @@ class StreamEditorService:
         except KeitaroError as error:
             raise StreamEditorError(error.kind) from None
 
-    def find_offer(self, campaign_id: int, offer_id: int) -> Offer:
-        """The Keitaro offer for this id. Missing when the campaign or the offer is gone."""
-        try:
-            self._campaign(campaign_id)
-
-            return self._keitaro.get_offer(offer_id)
-        except KeitaroError as error:
-            raise StreamEditorError(error.kind) from None
-
     def add(self, campaign_id: int, stream_id: int, offer_id: int) -> StreamEditor:
         """Editor state after binding this offer. The new row has no published snapshot."""
         try:
